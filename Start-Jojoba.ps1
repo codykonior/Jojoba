@@ -82,7 +82,7 @@ function Start-Jojoba {
 
             # Add any extra switches and parameters to the scriptblock so they can be passed to the caller.
             # This can't handle complex objects - those should be piped in instead.
-            $PSCmdlet.GetVariableValue("MyInvocation").BoundParameters.GetEnumerator() | %{
+            $PSCmdlet.GetVariableValue("MyInvocation").BoundParameters.GetEnumerator() | ForEach-Object {
                 if ($_.Key -ne "InputObject") {
                     if ($_.Value -is [System.Management.Automation.SwitchParameter]) {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key):`$$($_.Value)")

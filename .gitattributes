@@ -15,3 +15,8 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# PowerShell, some cmdlets generate these in a bad format for GitHub
+*.ps1 diff
+*.psd1 diff
+*.psm1 diff

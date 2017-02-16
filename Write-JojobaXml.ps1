@@ -49,7 +49,7 @@ function Write-JojobaXml {
     }
 
     process {
-	    foreach ($suite in ($Test | Group-Object Suite | Sort Case)) {
+	    foreach ($suite in ($Test | Group-Object Suite | Sort-Object Case)) {
 		    $xmlSuite = $xmlDocument.ImportNode($templateSuite.testsuite, $false)
 		    $xmlSuite.name = $suite.Name # From Group-Object
 		    $xmlSuite.tests = $suite.Group.Count.ToString()
