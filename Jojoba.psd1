@@ -51,7 +51,10 @@ Description = 'Operational Validation of SQL Server at scale with Jenkins and Po
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @('Error', 'PoshRSJob')
+RequiredModules = @(
+    'Error', 
+    'PoshRSJob'
+    )
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
