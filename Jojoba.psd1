@@ -12,7 +12,7 @@
 RootModule = 'Jojoba.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.0.2'
+ModuleVersion = '1.0.0.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -30,7 +30,7 @@ CompanyName = ''
 Copyright = '(c) 2017 Cody Konior. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Operational Validation of SQL Server at scale with Jenkins and PowerShell'
+Description = 'Operational validation of SQL Server at scale with Jenkins and PowerShell'
 
 # Minimum version of the Windows PowerShell engine required by this module
 # PowerShellVersion = ''
