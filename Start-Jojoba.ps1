@@ -10,9 +10,7 @@ For a Jojoba template function this will be the main call in the process {} bloc
 The test to carry out. It must use $InputObject or $_.
 
 .INPUTS
-None. All inputs are taken from the host function ($InputObject, Parallel, $_, $JojobaThrottle, $JojobaBatch).
-
-Other inputs taken are the calling module name and calling function name.
+None. All inputs are taken from the calling function ($JojobaBatch, $JojobaJenkins, $JojobaThrottle). The calling function is also probed for $InputObject and the $_ pipeline.
 
 .OUTPUTS
 A test case object. 
@@ -31,8 +29,14 @@ function Start-Jojoba {
     }
 
     process {
+        # Inherit the verbose setting across modules if it wasn't overridden
+        if (!$PSCmdlet.MyInvocation.BoundParameters.ContainsKey("Verbose")) {
+            $VerbosePreference = $PSCmdlet.GetVariableValue("VerbosePreference")
+        }
+
         # Fill out the base test case, named after parts of the caller
         $jojoba = [PSCustomObject] @{
+            UserName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
             Suite = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName
             Timestamp = Get-Date
             Time = 0
@@ -44,7 +48,7 @@ function Start-Jojoba {
         }
 
         # Determine whether we're going to run the test block, or spawn off copies to run in Parallel
-        if (!$PSCmdlet.GetVariableValue("Parallel")) {
+        if (!$PSCmdlet.GetVariableValue("JojobaThrottle")) {
             #region Single-threaded run
             Write-Verbose "Starting $($jojoba.Name)"
             
@@ -56,15 +60,30 @@ function Start-Jojoba {
                 Write-JojobaData (Resolve-Error $_ -AsString)
             }
 
+            # If the calling function has a Write-Jojoba then send them a copy of the test. If this fails,
+            # it also makes the test fail and which is at least output somewhere.
+            if ($writeJojoba = Get-Command -Module $jojoba.Suite | Where-Object { $_.Name -eq "Write-Jojoba" }) {
+                try {
+                    &$writeJojoba $jojoba
+                } catch {
+                    Write-JojobaFail $_.ToString()
+                    Write-JojobaData (Resolve-Error $_ -AsString)
+                }
+            }
+
             # Calculate other useful information for the test case for use by Jenkins
             $jojoba.Time = ((Get-Date) - $jojoba.Timestamp).TotalSeconds
 
             # Simplify the various outputs
             if ($jojoba.Message) {
                 $jojoba.Message = $jojoba.Message -join [Environment]::NewLine
+            } else {
+                $jojoba.Message = $null
             }
             if ($jojoba.Data) {
                 $jojoba.Data = $jojoba.Data -join [Environment]::NewLine
+            } else {
+                $jojoba.Data = $null
             }
 
             # Write out the test case
@@ -77,7 +96,7 @@ function Start-Jojoba {
                 Throttle = $PSCmdlet.GetVariableValue("JojobaThrottle")
                 Batch = $PSCmdlet.GetVariableValue("JojobaBatch")
                 ModulesToImport = @($jojoba.Suite)
-                ScriptBlock = [scriptblock]::Create("`$_ | $($jojoba.ClassName) -Parallel:`$false")
+                ScriptBlock = [scriptblock]::Create("`$_ | $($jojoba.ClassName) -JojobaThrottle 0")
             }
 
             # Add any extra switches and parameters to the scriptblock so they can be passed to the caller.

@@ -7,7 +7,7 @@ Retrieve results from Jojoba parallel runs and optionally package them for Jenki
 For a Jojoba template function a call to Publish-Jojoba must be in the end {} block. If parallel processing has been used, this script will wait for all jobs to complete before outputting the test data. It may also write a Jojoba.xml for processing by Jenkins.
 
 .INPUTS
-None. All inputs are taken from the host function ($Parallel, $JojobaBatch, and $Jenkins).
+None. All inputs are taken from the calling function ($JojobaBatch, $JojobaJenkins, and $JojobaThrottle).
 
 .OUTPUTS
 Test case data from all processed jobs. If a job fails, which should not happen, its output will be returned also. 
@@ -17,15 +17,14 @@ Test case data from all processed jobs. If a job fails, which should not happen,
 function Publish-Jojoba {
     [CmdletBinding()]
     param (
-        
     )
 
     begin {
     }
 
     process {
-        #region Retrieve and clean up results if run in Parallel mode
-        if ($PSCmdlet.GetVariableValue("Parallel")) {
+        #region Retrieve and clean up results if run in parallel mode
+        if ($PSCmdlet.GetVariableValue("JojobaThrottle")) {
             $completedJobs = New-Object Collections.ArrayList
             $jobErrors = New-Object Collections.ArrayList
 
@@ -43,7 +42,7 @@ function Publish-Jojoba {
             } | Remove-RSJob
             
             # Write out the XML file if Jenkins is in use
-            if ($completedJobs -and $PSCmdlet.GetVariableValue("Jenkins")) {
+            if ($completedJobs -and $PSCmdlet.GetVariableValue("JojobaJenkins")) {
                 Write-JojobaXml $completedJobs
             }
 

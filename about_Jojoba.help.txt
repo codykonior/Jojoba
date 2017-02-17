@@ -11,13 +11,12 @@ LONG DESCRIPTION
 	
 	* They take some set parameters.
 		$InputObject to refer to a specific instance of something being tested.
-		$Jenkins to enable or disable writing Jenkins jUnit XML to disk.
-		$Parallel to enable or disable parallelism. By default it's enabled. 
-            It's useful to disable this during debugging, as it allows you to 
-            set easy breakpoints in PowerShell ISE in your script block; 
-            otherwise those will be run in other threads and won't trigger.
-		$JojobaThrottle to set a thread count, defaults to CPU count.
-		$JojobaBatch which is used internally for thread pooling.
+		$JojobaBatch which is used internally for pooling the entire pipeline
+            into one runspace.
+		$JojobaJenkins to enable or disable writing Jenkins jUnit XML to disk.
+		$JojobaThrottle to set a job count which defaults to CPU count. If 0,
+            then the job system is skipped (good for debugging as otherwise a
+            runspace job usually won't trigger an ISE breakpoint).
 		
 	* They call Start-Jojoba in their process block.
 		It takes a scriptblock, which is just a normal script block to do any 
@@ -62,11 +61,11 @@ EXAMPLE #1
 			[Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
 			[string] $InputObject,
 
-			[switch] $Jenkins,
-			[switch] $Parallel = $true,
-			[int]    $JojobaThrottle = $env:NUMBER_OF_PROCESSORS,
-			[guid]   $JojobaBatch = [System.Guid]::NewGuid().Guid
-		)        
+			[guid]   $JojobaBatch = [System.Guid]::NewGuid().Guid,
+			[switch] $JojobaJenkins,
+			[int]    $JojobaThrottle = $env:NUMBER_OF_PROCESSORS
+		)
+
 		begin {
 		}
 
