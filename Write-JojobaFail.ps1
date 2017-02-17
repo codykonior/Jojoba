@@ -31,7 +31,7 @@ function Write-JojobaFail {
     }
 
     process {
-        [void] $jojoba.Message.Add($ErrorMessage)
+        [void] $jojoba.Message.Add($Message)
 
         $jojoba.Result = "Fail"
     }
