@@ -57,11 +57,11 @@ function Publish-Jojoba {
                 $jobErrors
 
                 # Mark any Jenkins build as failed
-                $LASTEXITCODE = 1
+                $global:LASTEXITCODE = 1
             } else {
                 # Mark the build as a success (though Jenkins may interpret the test results
                 # and mark it as failed for other reasons)
-                $LASTEXITCODE = 0
+                $global:LASTEXITCODE = 0
             }
         }
         #endregion

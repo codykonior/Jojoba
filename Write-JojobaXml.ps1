@@ -49,45 +49,54 @@ function Write-JojobaXml {
     }
 
     process {
-	    foreach ($suite in ($Test | Group-Object Suite | Sort-Object Case)) {
-		    $xmlSuite = $xmlDocument.ImportNode($templateSuite.testsuite, $false)
-		    $xmlSuite.name = $suite.Name # From Group-Object
-		    $xmlSuite.tests = $suite.Group.Count.ToString()
+        foreach ($suite in ($Test | Group-Object Suite | Sort-Object Case)) {
+            # This wouldn't normally be required but is to get around an edge
+            # case of users running scripts instead of modules.
+            $suiteName = [string] $Suite.Name
+            if (!$suiteName) {
+                $suiteName = "Jojoba"
+            }
+            $xmlSuite = $xmlDocument.ImportNode($templateSuite.testsuite, $false)
+            $xmlSuite.name = [string] $suiteName
+            $xmlSuite.tests = [string] $suite.Group.Count
 
-		    foreach ($case in $suite.Group) {
-			    $xmlCase = $xmlDocument.ImportNode($templateCase.testcase, $false)
-                $xmlCase.timestamp = $case.Timestamp.ToString()
-                $xmlCase.time = $case.Time.ToString()
+            foreach ($case in $suite.Group) {
+                $xmlCase = $xmlDocument.ImportNode($templateCase.testcase, $false)
+                $xmlCase.timestamp = [string] $case.Timestamp
+                $xmlCase.time = [string] $case.Time
 
-                $xmlCase.classname = $case.Suite + "." + $case.ClassName
-			    $xmlCase.name = $case.Name
+                # Some of these ToString's don't seem necessary, but, it seems
+                # in some cases the parameters are a NoteProperty and it really
+                # demands they are exactly a string. Sometimes they're $null...
+                $xmlCase.classname = [string] $suiteName + "." + $case.ClassName
+                $xmlCase.name = [string] $case.Name
 
-			    if ($case.Result -eq "Fail") {
-				    $xmlFailure = $xmlDocument.ImportNode($templateFailure.failure, $false)
-				    if ($case.Message) {
-                        $xmlFailure.message = $case.Message.ToString()
+                if ($case.Result -eq "Fail") {
+                    $xmlFailure = $xmlDocument.ImportNode($templateFailure.failure, $false)
+                    if ($case.Message) {
+                        $xmlFailure.message = [string] $case.Message
                     }
-				    if ($case.Data) {
-                        $xmlFailure.InnerText = $case.Data.ToString()
+                    if ($case.Data) {
+                        $xmlFailure.InnerText = [string] $case.Data
                     }
 
-				    [void] $xmlCase.AppendChild($xmlFailure)
-			    } elseif ($case.Result -eq "Skip") {
-				    $xmlSkipped = $xmlDocument.ImportNode($templateSkipped.skipped, $false)
-				    if ($case.Message) {
-                        $xmlSkipped.message = $case.Message.ToString()
+                    [void] $xmlCase.AppendChild($xmlFailure)
+                } elseif ($case.Result -eq "Skip") {
+                    $xmlSkipped = $xmlDocument.ImportNode($templateSkipped.skipped, $false)
+                    if ($case.Message) {
+                        $xmlSkipped.message = [string] $case.Message
                     }
-				    if ($case.Data) {
-                        $xmlSkipped.InnerText = $case.Data.ToString()
+                    if ($case.Data) {
+                        $xmlSkipped.InnerText = [string] $case.Data
                     }
 
-				    [void] $xmlCase.AppendChild($xmlSkipped)
+                    [void] $xmlCase.AppendChild($xmlSkipped)
                 }
-			    [void] $xmlSuite.AppendChild($xmlCase)
-		    }
+                [void] $xmlSuite.AppendChild($xmlCase)
+            }
 
-		    [void] $xmlDocument.ChildNodes.AppendChild($xmlSuite)
-	    }
+            [void] $xmlDocument.ChildNodes.AppendChild($xmlSuite)
+        }
     }
 
     end {

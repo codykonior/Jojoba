@@ -37,7 +37,7 @@ function Start-Jojoba {
         # Fill out the base test case, named after parts of the caller
         $jojoba = [PSCustomObject] @{
             UserName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-            Suite = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName
+            Suite = if ($PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName) { $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName } else { $PSCmdlet.GetVariableValue("MyInvocation").PSCommandPath }
             Timestamp = Get-Date
             Time = 0
             ClassName = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.Name
@@ -95,7 +95,8 @@ function Start-Jojoba {
             $jobArguments = @{
                 Throttle = $PSCmdlet.GetVariableValue("JojobaThrottle")
                 Batch = $PSCmdlet.GetVariableValue("JojobaBatch")
-                ModulesToImport = @($jojoba.Suite)
+                ModulesToImport = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName # Not Suite as we may have overridden it
+                FunctionsToLoad = if (!$PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName) { $jojoba.ClassName };
                 ScriptBlock = [scriptblock]::Create("`$_ | $($jojoba.ClassName) -JojobaThrottle 0")
             }
 
