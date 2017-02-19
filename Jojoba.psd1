@@ -12,7 +12,7 @@
 RootModule = 'Jojoba.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.2.1'
+ModuleVersion = '1.0.3.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -73,13 +73,14 @@ RequiredModules = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(
+    # What you'd use
     "Start-Jojoba",
-    "Write-JojobaData",
     "Write-JojobaFail",
     "Write-JojobaSkip",
-    "Write-JojobaXml",
     "Publish-Jojoba",
-    "Out-JojobaSpeech"
+    "Out-JojobaSpeech",
+    # Internal stuff but exposed for testing purposes
+    "Write-JojobaXml"
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

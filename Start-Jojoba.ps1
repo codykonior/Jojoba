@@ -83,12 +83,36 @@ function Start-Jojoba {
                 Data = New-Object Collections.ArrayList
             }
             
-            try {
-                &$ScriptBlock
+            $jojobaMessages = try {
+                &$ScriptBlock *>&1
             } catch {
-                # Handle uncaught exceptions as a test block failure. This saves a lot of test code.
+                # Handle an uncaught stop as a test block failure. This saves
+                # having to write test code for everything if the exception is
+                # self explanatory
                 Write-JojobaFail $_.ToString()
-                Write-JojobaData (Resolve-Error $_ -AsString)
+                Resolve-Error $_ -AsString
+            }
+
+            foreach ($jojobaMessage in $jojobaMessages) {
+                if ($jojobaMessage -is [string]) {
+                    [void] $jojobaTestCase.Data.Add($jojobaMessage)
+                } elseif ($jojobaMessage.GetType().FullName -eq "System.Management.Automation.InformationRecord") {
+                    # Used in PS5 to capture Write-Host output
+                    if ($jojobaMessage.Tags.Contains("PSHOST")) {
+                        [void] $jojobaTestCase.Data.Add($jojobaMessage)      
+                    } else {
+                        [void] $jojobaTestCase.Data.Add($jojobaMessage)
+                    }
+                } elseif ($jojobaMessage -is [System.Management.Automation.VerboseRecord]) {
+                    [void] $jojobaTestCase.Data.Add("VERBOSE: $jojobaMessage")
+                } elseif ($jojobaMessage -is [System.Management.Automation.WarningRecord]) {
+                    [void] $jojobaTestCase.Data.Add("WARNING: $jojobaMessage")
+                } elseif ($jojobaMessage -is [System.Management.Automation.ErrorRecord]) {
+                    # Exceptions also get wrapped in an ErrorRecord
+                    [void] $jojobaTestCase.Data.Add((Resolve-Error $jojobaMessage -AsString))
+                } else {
+                    [void] $jojobaTestCase.Data.Add(($jojobaMessage | Select-Object * | Format-List | Out-String))
+                }
             }
 
             # Calculate other useful information for the test case for use by Jenkins
@@ -101,7 +125,7 @@ function Start-Jojoba {
                     &$jojobaCallbackReference $jojobaTestCase
                 } catch {
                     Write-JojobaFail $_.ToString()
-                    Write-JojobaData (Resolve-Error $_ -AsString)
+                    [void] $jojobaTestCase.Data.Add((Resolve-Error $_ -AsString))
                 }
             }
 
