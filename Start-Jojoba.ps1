@@ -10,7 +10,12 @@ For a Jojoba template function this will be the main call in the process {} bloc
 The test to carry out. It must use $InputObject or $_.
 
 .INPUTS
-None. All inputs are taken from the calling function ($JojobaBatch, $JojobaJenkins, $JojobaThrottle). The calling function is also probed for $InputObject and the $_ pipeline.
+All inputs aside from the ScriptBlock are taken from the calling function.
+    $JojobaBatch
+    $JojobaCallback (optional, for writing events elsewhere)
+    $JojobaJenkins
+    $JojobaThrottle (required for batch runs, optional for testing)
+    $JojobaSuite (optional)
 
 .OUTPUTS
 A test case object. 
@@ -29,36 +34,44 @@ function Start-Jojoba {
     }
 
     process {
-        # Inherit the verbose setting across modules if it wasn't overridden
-        $VerbosePreference = $PSCmdlet.GetVariableValue("VerbosePreference")
-        # This is not specified, it's for internal use
-        $JojobaModuleName = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName
-        $JojobaClassName = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.Name
-        $JojobaName = $PSCmdlet.GetVariableValue("InputObject")
-        
-        # Inherit the Jojoba specific variables
+        # Gather information about the caller
+        $jojobaModuleName = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName
+        $jojobaClassName = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.Name
+        $jojobaName = $PSCmdlet.GetVariableValue("InputObject")
+        if ($jojobaClassNameFolder = $PSCmdlet.GetVariableValue("PSCommandPath")) {
+            $jojobaClassNameFolder = Split-Path -Leaf (Split-Path -Parent $jojobaClassNameFolder)
+        } 
+    
+        # Inherit Jojoba parameters from the caller
         $JojobaBatch = $PSCmdlet.GetVariableValue("JojobaBatch")
         if (!($JojobaCallback = $PSCmdlet.GetVariableValue("JojobaCallback"))) {
             $JojobaCallback = "Write-JojobaCallback"
         }
-        # Not used here, used in Publish-Jojoba
-        # $JojobaJenkins = $PSCmdlet.GetVariableValue("JojobaJenkins")
-        # Suite can be overridden, otherwise it's the module name, or just
-        # "(Root)" (something is needed to represent it in jUnit).
+        $JojobaJenkins = $PSCmdlet.GetVariableValue("JojobaJenkins")
         if (!($JojobaSuite = $PSCmdlet.GetVariableValue("JojobaSuite"))) {
-            if (!($JojobaSuite = $jojobaModuleName)) {
+            if ($JojobaSuite = $jojobaModuleName) {
+                if ($jojobaClassNameFolder -and $jojobaClassNameFolder -ne $jojobaModuleName) {
+                    $JojobaSuite += "\$jojobaClassNameFolder"
+                }
+            } else {
                 $JojobaSuite = "(Root)"
             }
         }
         $JojobaThrottle = $PSCmdlet.GetVariableValue("JojobaThrottle")
-        
-        # If it's not defined, or 0, it's a direct/single run
+        # You'd almost always specify JojobaThrottle. If you didn't, well, it's allowed, but 
+        if ($JojobaThrottle -and !$JojobaBatch) {
+            Write-Error "When running in PoshRSJob mode the caller must have a unique `$JojobaBatch per pipeline"
+        }
+        if (!$JojobaThrottle -and $JojobaJenkins) {
+            Write-Error "When running in direct mode the caller cannot use `$JojojobaJenkins"
+        }
+
         if (!$JojobaThrottle) {
-            #region Single-threaded run
+            #region Direct run
             Write-Verbose "Starting inside thread for $JojobaName"
             
             # Fill out the base test case, named after parts of the original caller
-            $jojoba = [PSCustomObject] @{
+            $jojobaTestCase = [PSCustomObject] @{
                 UserName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
                 Suite = $JojobaSuite
                 Timestamp = Get-Date
@@ -69,7 +82,7 @@ function Start-Jojoba {
                 Message = New-Object Collections.ArrayList
                 Data = New-Object Collections.ArrayList
             }
-
+            
             try {
                 &$ScriptBlock
             } catch {
@@ -79,23 +92,23 @@ function Start-Jojoba {
             }
 
             # Calculate other useful information for the test case for use by Jenkins
-            $jojoba.Time = ((Get-Date) - $jojoba.Timestamp).TotalSeconds
+            $jojobaTestCase.Time = ((Get-Date) - $jojobaTestCase.Timestamp).TotalSeconds
             
             # If the calling function has a Write-Jojoba then send them a copy of the test. If this fails,
             # it also makes the test fail and which is at least output somewhere.
-            if ($writeJojoba = Get-Command -Module $jojoba.Suite | Where-Object { $_.Name -eq $JojobaCallback }) {
+            if ($jojobaCallbackReference = Get-Command -Module $JojobaModuleName | Where-Object { $_.Name -eq $JojobaCallback }) {
                 try {
-                    &$writeJojoba $jojoba
+                    &$jojobaCallbackReference $jojobaTestCase
                 } catch {
                     Write-JojobaFail $_.ToString()
                     Write-JojobaData (Resolve-Error $_ -AsString)
                 }
             }
 
-            # Write out the test case after removing ArrayList {} marks
-            $jojoba.Message = $jojoba.Message -join [Environment]::NewLine
-            $jojoba.Data = $jojoba.Data -join [Environment]::NewLine
-            $jojoba
+            # Write out the test case after getting rid of {} marks
+            $jojobaTestCase.Message = $jojobaTestCase.Message -join [Environment]::NewLine
+            $jojobaTestCase.Data = $jojobaTestCase.Data -join [Environment]::NewLine
+            $jojobaTestCase
             #endregion
         } else {
             #region Parallel run
@@ -106,12 +119,14 @@ function Start-Jojoba {
                 ModulesToImport = $JojobaModuleName
                 FunctionsToLoad = if (!$jojobaModuleName) { $JojobaClassName } else { $null }
                 ScriptBlock = [scriptblock]::Create("`$_ | $($JojobaClassName) -JojobaThrottle 0")
+                Verbose = $VerbosePreference
             }
 
             # Add any extra switches and parameters to the scriptblock so they can be passed to the caller.
             # This can't handle complex objects - those should be piped in instead.
+            # Some exceptions for Jojoba flags are included.            
             $PSCmdlet.GetVariableValue("MyInvocation").BoundParameters.GetEnumerator() | ForEach-Object {
-                if ($_.Key -ne "InputObject" -and $_.Key -ne "JojobaThrottle") {
+                if (@("InputObject", "JojobaBatch", "JojobaJenkins", "JojobaThrottle") -notcontains $_.Key) {
                     if ($_.Value -is [System.Management.Automation.SwitchParameter]) {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key):`$$($_.Value)")
                     } else {
