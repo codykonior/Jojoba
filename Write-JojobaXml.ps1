@@ -74,20 +74,20 @@ function Write-JojobaXml {
                 if ($case.Result -eq "Fail") {
                     $xmlFailure = $xmlDocument.ImportNode($templateFailure.failure, $false)
                     if ($case.Message) {
-                        $xmlFailure.message = [string] $case.Message
+                        $xmlFailure.message = $case.Message -join [Environment]::NewLine
                     }
                     if ($case.Data) {
-                        $xmlFailure.InnerText = [string] $case.Data
+                        $xmlFailure.InnerText = $case.Data -join [Environment]::NewLine
                     }
 
                     [void] $xmlCase.AppendChild($xmlFailure)
                 } elseif ($case.Result -eq "Skip") {
                     $xmlSkipped = $xmlDocument.ImportNode($templateSkipped.skipped, $false)
                     if ($case.Message) {
-                        $xmlSkipped.message = [string] $case.Message
+                        $xmlSkipped.message = $case.Message -join [Environment]::NewLine
                     }
                     if ($case.Data) {
-                        $xmlSkipped.InnerText = [string] $case.Data
+                        $xmlSkipped.InnerText = $case.Data -join [Environment]::NewLine
                     }
 
                     [void] $xmlCase.AppendChild($xmlSkipped)
