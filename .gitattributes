@@ -20,3 +20,7 @@
 *.ps1 diff
 *.psd1 diff
 *.psm1 diff
+
+*.ps1 text eol=crlf
+*.psd1 text eol=crlf
+*.psm1 text eol=crlf

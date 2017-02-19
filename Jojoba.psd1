@@ -53,7 +53,6 @@ Description = 'Operational validation of SQL Server at scale with Jenkins and Po
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
     'Error',
-    'Performance',
     'PoshRSJob'
     )
 
