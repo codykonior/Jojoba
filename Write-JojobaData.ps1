@@ -33,9 +33,9 @@ function Write-JojobaData {
     process {
         if ($Message) {
             if ($Message -is [string]) {
-                [void] $jojoba.Data.Add($Message)
+                [void] $jojobaTestCase.Data.Add($Message)
             } else {
-                [void] $jojoba.Data.Add(($Message | Format-List | Out-String))
+                [void] $jojobaTestCase.Data.Add(($Message | Format-List | Out-String))
             }
         }
     }

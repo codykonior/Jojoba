@@ -11,13 +11,19 @@ LONG DESCRIPTION
 	
 	* They take some set parameters.
 		$InputObject to refer to a specific instance of something being tested.
+            To avoid weird errors be careful to declare it EXACTLY as it's done
+            in the template (apart from adding other aliases).
 		$JojobaBatch which is used internally for pooling the entire pipeline
             into one runspace.
+        $JojobaCallback which is the name of a function (within the calling
+            module ONLY) to which completed tests should be passed to, this is
+            to integrate writing them out to various database locations.
 		$JojobaJenkins to enable or disable writing Jenkins jUnit XML to disk.
 		$JojobaThrottle to set a job count which defaults to CPU count. If 0,
             then the job system is skipped (good for debugging as otherwise a
             runspace job usually won't trigger an ISE breakpoint).
-		
+		$JojobaSuite to optionally override the Suite name of a test.
+
 	* They call Start-Jojoba in their process block.
 		It takes a scriptblock, which is just a normal script block to do any 
         kind of operations on $InputObject and other defined parameters.
@@ -27,7 +33,8 @@ LONG DESCRIPTION
 		Write-JojobaFail to fail the test with a message.
 		Write-JojobaSkip to skip the test with a message.
 		
-	* They call Publish-Jojoba in their end block.
+	* They call Publish-Jojoba in their end block. This is required here to
+        wait and receive all the job information created in the process block.
 
 REQUIREMENTS
 	Functions must exist inside a module, as the module name is used to set the
@@ -61,7 +68,7 @@ EXAMPLE #1
 			[Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
 			[string] $InputObject,
 
-			[guid]   $JojobaBatch = [System.Guid]::NewGuid().Guid,
+			[string] $JojobaBatch = [System.Guid]::NewGuid().Guid,
 			[switch] $JojobaJenkins,
 			[int]    $JojobaThrottle = $env:NUMBER_OF_PROCESSORS
 		)

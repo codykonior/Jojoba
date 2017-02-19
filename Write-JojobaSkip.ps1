@@ -34,8 +34,8 @@ function Write-JojobaSkip {
     }
 
     process {
-        [void] $jojoba.Message.Add($Message)
-        $jojoba.Result = "Skip"
+        [void] $jojobaTestCase.Message.Add($Message)
+        $jojobaTestCase.Result = "Skip"
     }
 
     end {

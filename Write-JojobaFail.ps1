@@ -31,9 +31,9 @@ function Write-JojobaFail {
     }
 
     process {
-        [void] $jojoba.Message.Add($Message)
+        [void] $jojobaTestCase.Message.Add($Message)
 
-        $jojoba.Result = "Fail"
+        $jojobaTestCase.Result = "Fail"
     }
 
     end {
