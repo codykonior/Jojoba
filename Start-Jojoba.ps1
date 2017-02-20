@@ -111,7 +111,7 @@ function Start-Jojoba {
                     # Exceptions also get wrapped in an ErrorRecord
                     [void] $jojobaTestCase.Data.Add((Resolve-Error $jojobaMessage -AsString))
                 } else {
-                    [void] $jojobaTestCase.Data.Add(($jojobaMessage | Select-Object * | Format-List | Out-String))
+                    [void] $jojobaTestCase.Data.Add(($jojobaMessage | Format-List | Out-String))
                 }
             }
 
