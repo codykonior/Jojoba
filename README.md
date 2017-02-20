@@ -4,81 +4,138 @@
     about_Jojoba
 
 ## SHORT DESCRIPTION
-    Jojoba provides a simple domain-specific language to add to functions. This wraps the
-    functions so that they can return a consistent result format, automatically run in
-    parallel, and write Jenkins XML output.
+    Jojoba is a small set of DSL keywords to use in a function template. These
+    wrap the function to automatically scale out using PoshRSJob, gather all
+    output data to return in a jUnit result format, and optionally write it 
+    out to disk in a jUnit XML format that Jenkins can understand.
     
 ## LONG DESCRIPTION
 	Functions use Jojoba at set integration points.
 	
-	* They take some set parameters.
+	* Your function must define some parameters.
 		$InputObject to refer to a specific instance of something being tested.
-		$Jenkins to enable or disable writing Jenkins jUnit XML to disk.
-		$Parallel to enable or disable parallelism. By default it's enabled. It's useful
-			to disable this during debugging, as it allows you to set easy breakpoints
-			in PowerShell ISE in your script block; otherwise those will be run in other
-			threads and likely won't trigger.
-		$JojobaThrottle to set a thread count, defaults to CPU count.
-		$JojobaBatch which is used internally for thread pooling.
+            To avoid weird errors be careful to declare it EXACTLY as it's done
+            in the template (apart from adding other aliases).
+		$JojobaBatch which is used internally for pooling the entire pipeline
+            into one runspace.
+        $JojobaCallback which is the name of a function (within the calling
+            module ONLY) to which completed tests should be passed to, this is
+            to integrate writing them out to various database locations.
+		$JojobaJenkins to enable writing Jenkins jUnit XML to disk.
+		$JojobaThrottle to set a job count which defaults to CPU count. If 0,
+            then the job system is skipped (good for debugging as otherwise a
+            runspace job usually won't trigger an ISE breakpoint).
+		$JojobaSuite to optionally override the Suite name of a test.
+
+	* Your function calls Start-Jojoba in the process block.
+		It takes a scriptblock, which is just a normal script block to do any 
+            kind of operations on $InputObject and other defined parameters.
 		
-	* They call Start-Jojoba in their process block.
-		It takes a scriptblock, which is just a normal script block to do any kind of
-		operations on $InputObject and other defined parameters.
+	* Your function notifies Jojoba of any test-specific information.
+		Write-JojobaFail to fail the test with a message. After this processing
+            continues unless you use "return".
+		Write-JojobaSkip to skip the test with a message. After this processing
+            continues unless you use "return".
+        All streams (depending on your version of PowerShell and its preference
+            setings) are written to the Data section as if you were running the
+            script interactively. Non-terminating errors will be written here
+            with a stack dump. Uncaught terminating errors will result in a call
+            to Write-JojobaFail (setting the Result to Fail, Message to the
+            exception message, and Data to a stack dump). Then your script block
+            will terminate.
 		
-	* They notify Jojoba of any test-specific information.
-		Write-JojobaData to output generic verbose data and stack traces.
-		Write-JojobaFail to fail the test with a message.
-		Write-JojobaSkip to skip the test with a message.
-		
-	* They call Publish-Jojoba in their end block.
+	* Your function calls Publish-Jojoba in the end block. This is required 
+        to wait and receive all job results created in the process block.
 
 ## REQUIREMENTS
-	Functions must exist inside a module, as the module name is used to set the suite name
-	for a test. That module must require the Jojoba module.
+	Functions must exist inside a module, as the module name is used to set the
+    suite name for a test (though it can be overridden). That module must 
+    require the Jojoba module.
 	
-	Functions must use an $InputObject string. This is used to give a case name to the
-	test. It's okay and recommended to alias this field. Common examples would be:
+	Functions must use an $InputObject string. This is used to give a case name
+    to the test. It's okay and recommended to alias this field, but otherwise
+    the parameter information and type should remain as-is. Common examples
+    would be:
 		ComputerName
 		ServerInstance
 		Url
 		
-	However it's also acceptable to pipeline complex object input into the test if it has
-	an InputObject or other aliased property name. These will be passed on as expected.
+    It's acceptable to pipe into InputObject as a property name, as declared
+    in the syntax. It and other bound parameters will be pased on as expected.
 
-	These modules should be available:	
+	These modules are required as Jojoba has a dependency on them:	
 		Error
 		PoshRSJob
 	
-	It's also recommended that you use CimSession and DbData modules as these are more 
-	reliable when run concurrently (compared to WMI and Invoke-Sqlcmd).
+	It's also recommended that you use CimSession and DbData modules as these 
+    are more reliable when run concurrently (compared to WMI and Invoke-Sqlcmd).
 	
 ## EXAMPLE #1
-	Functions should follow this strict template. It's okay to add extra parameters, they
-	will be passed onto as expected.
+	Functions should follow this strict template. It's okay to add extra 
+    parameters, they will be passed onto as expected.
 
-	function Test-TestName {
+	function Test-Template {
 		[CmdletBinding()]
 		param (
 			[Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
 			[string] $InputObject,
+            <# ... extra parameters .. #>
 
-			[switch] $Jenkins,
-			[switch] $Parallel = $true,
-			[int]   $JojobaThrottle = $env:NUMBER_OF_PROCESSORS,
-			[guid]  $JojobaBatch = [System.Guid]::NewGuid().Guid
-		)        
+			[string] $JojobaBatch = [System.Guid]::NewGuid().Guid,
+			[switch] $JojobaJenkins,
+			[int]    $JojobaThrottle = $env:NUMBER_OF_PROCESSORS
+		)
+
 		begin {
 		}
+
 		process {
 			Start-Jojoba {
 				<#
-				Write-JojobaData "..."
-			
 				Write-JojobaFail "..."
 				Write-JojobaSkip "..."
 				#>
 		   }
 		}
+
+		end {
+			Publish-Jojoba
+		}
+	}
+
+## Example 2
+	A more complete function. In this case, the suite name can be overridden,
+    and your module can define a "Write-JojobaCallback" function which will
+    be called with all jUnit records as they are created so they can be written
+    out to other destinations in a format of your choosing. This is useful to
+    send data to a database alongside XML and Jenkins.
+
+	function Test-Template {
+		[CmdletBinding()]
+		param (
+			[Parameter(Mandatory=$true, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
+			[string] $InputObject,
+            <# ... extra parameters .. #>
+
+			[string] $JojobaBatch = [System.Guid]::NewGuid().Guid,
+            [string] $JojobaCallback = "Write-JojobaCallback",
+			[switch] $JojobaJenkins,
+            [string] $JojobaSuite = "My Suite Name",
+			[int]    $JojobaThrottle = $env:NUMBER_OF_PROCESSORS
+		)
+
+		begin {
+		}
+
+		process {
+			Start-Jojoba {
+				<#
+				Write-JojobaFail "..."
+				Write-JojobaSkip "..."
+				#>
+		   }
+		}
+
 		end {
 			Publish-Jojoba
 		}
