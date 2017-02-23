@@ -12,7 +12,7 @@
 RootModule = 'Jojoba.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.3.2'
+ModuleVersion = '1.0.3.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -52,6 +52,7 @@ Description = 'Operational validation of SQL Server at scale with Jenkins and Po
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
+    'Disposable',
     'Error',
     'PoshRSJob'
     )
