@@ -41,8 +41,8 @@ function Publish-Jojoba {
                 $_
             } | Remove-RSJob
             
-            # Write out the XML file if Jenkins is in use
-            if ($completedJobs -and $PSCmdlet.GetVariableValue("JojobaJenkins")) {
+            # Write out the XML file if there's output, and we're either asked or Jenkins is in use
+            if ($completedJobs -and ($PSCmdlet.GetVariableValue("JojobaJenkins") -or $env:BUILD_URL)) {
                 Write-JojobaXml $completedJobs
             }
 
