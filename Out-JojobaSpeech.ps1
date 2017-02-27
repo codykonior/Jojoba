@@ -31,10 +31,10 @@ function Test-DatabaseServer {
                     break
                 }
                 "LARRY" {
-                    Write-DbFail "Offline for maintenance"
+                    Write-JojobaFail "Offline for maintenance"
                 }
                 "CURLY" {
-                    Write-DbFail "Is not even resolving an IP address, oh no!"
+                    Write-JojobaFail "Is not even resolving an IP address, oh no!"
                 }
             }
         }

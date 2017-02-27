@@ -79,8 +79,7 @@ EXAMPLE #1
 			[string] $InputObject,
             <# ... extra parameters .. #>
 
-			[string] $JojobaBatch = [System.Guid]::NewGuid().Guid,
-			[switch] $JojobaJenkins,
+			[string] $JojobaBatch = [System.Guid]::NewGuid().ToString(),
 			[int]    $JojobaThrottle = $env:NUMBER_OF_PROCESSORS
 		)
 

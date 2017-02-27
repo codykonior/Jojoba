@@ -21,7 +21,9 @@
         $JojobaCallback which is the name of a function (within the calling
             module ONLY) to which completed tests should be passed to, this is
             to integrate writing them out to various database locations.
-		$JojobaJenkins to enable writing Jenkins jUnit XML to disk.
+		$JojobaJenkins to enable writing Jenkins jUnit XML to disk. This is
+            only required if you need to force it - it can detect Jenkins and
+            will always write XML in those cases.
 		$JojobaThrottle to set a job count which defaults to CPU count. If 0,
             then the job system is skipped (good for debugging as otherwise a
             runspace job usually won't trigger an ISE breakpoint).
@@ -81,8 +83,7 @@
 			[string] $InputObject,
             <# ... extra parameters .. #>
 
-			[string] $JojobaBatch = [System.Guid]::NewGuid().Guid,
-			[switch] $JojobaJenkins,
+			[string] $JojobaBatch = [System.Guid]::NewGuid().ToString(),
 			[int]    $JojobaThrottle = $env:NUMBER_OF_PROCESSORS
 		)
 
@@ -117,7 +118,7 @@
 			[string] $InputObject,
             <# ... extra parameters .. #>
 
-			[string] $JojobaBatch = [System.Guid]::NewGuid().Guid,
+			[string] $JojobaBatch = [System.Guid]::NewGuid().ToString(),
             [string] $JojobaCallback = "Write-JojobaCallback",
 			[switch] $JojobaJenkins,
             [string] $JojobaSuite = "My Suite Name",

@@ -93,7 +93,7 @@ function Start-Jojoba {
                 Resolve-Error $_ -AsString
             }
 
-            foreach ($jojobaMessage in $jojobaMessages) {
+            foreach ($jojobaMessage in ($jojobaMessages | Where-Object { $null -ne $_ })) {
                 if ($jojobaMessage -is [string]) {
                     [void] $jojobaTestCase.Data.Add($jojobaMessage)
                 } elseif ($jojobaMessage.GetType().FullName -eq "System.Management.Automation.InformationRecord") {
