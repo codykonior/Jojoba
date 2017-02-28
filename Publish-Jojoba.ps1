@@ -6,6 +6,9 @@ Retrieve results from Jojoba parallel runs and optionally package them for Jenki
 .DESCRIPTION
 For a Jojoba template function a call to Publish-Jojoba must be in the end {} block. If parallel processing has been used, this script will wait for all jobs to complete before outputting the test data. It may also write a Jojoba.xml for processing by Jenkins.
 
+.PARAMETER OutputPath
+Output path for Jojoba XML. This is only triggered if JojobaThrottle -ne 0, $JojobaJenkins = $true, or it is executing under Jenkins.
+
 .INPUTS
 None. All inputs are taken from the calling function ($JojobaBatch, $JojobaJenkins, and $JojobaThrottle).
 
@@ -17,6 +20,7 @@ Test case data from all processed jobs. If a job fails, which should not happen,
 function Publish-Jojoba {
     [CmdletBinding()]
     param (
+        $OutputPath = ".\Jojoba.xml"
     )
 
     begin {
@@ -42,8 +46,8 @@ function Publish-Jojoba {
             } | Remove-RSJob
             
             # Write out the XML file if there's output, and we're either asked or Jenkins is in use
-            if ($completedJobs -and ($PSCmdlet.GetVariableValue("JojobaJenkins") -or $env:BUILD_URL)) {
-                Write-JojobaXml $completedJobs
+            if ($completedJobs -and ($PSCmdlet.GetVariableValue("JojobaJenkins") -or $env:JENKINS_SERVER_COOKIE)) {
+                Write-JojobaXml $completedJobs -OutputPath $OutputPath
             }
 
             # Write out all the good test information
