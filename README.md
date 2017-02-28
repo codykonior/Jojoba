@@ -69,7 +69,7 @@
 		Error
 		PoshRSJob
 	
-	It's also recommended that you use CimSession and DbData modules as these 
+	It's also recommended that you use the Cim and DbData modules as these 
     are more reliable when run concurrently (compared to WMI and Invoke-Sqlcmd).
 	
 ## EXAMPLE #1
