@@ -13,7 +13,7 @@ The test to carry out. It must use $InputObject or $_.
 All inputs aside from the ScriptBlock are taken from the calling function.
     $JojobaBatch
     $JojobaCallback (optional, for writing events elsewhere)
-    $JojobaJenkins
+    $JojobaJenkins (optional, for forcing a write of XML)
     $JojobaThrottle (required for batch runs, optional for testing)
     $JojobaSuite (optional)
 
