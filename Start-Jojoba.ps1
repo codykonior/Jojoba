@@ -153,6 +153,8 @@ function Start-Jojoba {
                 if (@("InputObject", "JojobaBatch", "JojobaJenkins", "JojobaThrottle") -notcontains $_.Key) {
                     if ($_.Value -is [System.Management.Automation.SwitchParameter]) {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key):`$$($_.Value)")
+                    } elseif ($_.Value -is [string]) {
+                        $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key) '$($_.Value.Replace("'", "''"))'")
                     } else {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key) $($_.Value)")
                     }

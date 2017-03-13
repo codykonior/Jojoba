@@ -10,7 +10,13 @@ $ErrorActionPreference = "Stop"
 foreach ($fileName in (Get-ChildItem $PSScriptRoot "*.ps1" -Recurse)) {
     try {
 	    Write-Verbose "Loading function from path '$fileName'."
-	    . $fileName.FullName
+	    if ($Host.Name -eq "Windows PowerShell ISE Host") {
+            # Allows debugging
+            . $fileName.FullName
+        } else {
+            # Faster but no debugging
+            Invoke-Expression ([System.IO.File]::ReadAllLines($fileName.FullName))
+        }
     } catch {
 	    Write-Error $_
     }
