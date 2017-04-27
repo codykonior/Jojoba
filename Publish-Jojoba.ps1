@@ -35,7 +35,7 @@ function Publish-Jojoba {
             # Get, receive, and remove jobs as they complete. Any errors should be caught
             # and encapsulated as part of a test result. But in case they don't, then we
             # deal with them separately.
-            Get-RSJob -Batch $PSCmdlet.GetVariableValue("JojobaBatch") | Wait-RSJob | ForEach-Object {
+            Get-RSJob -Batch $PSCmdlet.GetVariableValue("JojobaBatch") | Wait-RSJob -ShowProgress | ForEach-Object {
                 if ($_.State -ne "Failed" -and !$_.HasErrors) {
                     [void] $completedJobs.Add((Receive-RSJob $_))
                 } else {
