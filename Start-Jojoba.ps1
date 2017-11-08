@@ -38,6 +38,7 @@ function Start-Jojoba {
         $jojobaModuleName = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.ModuleName
         $jojobaClassName = $PSCmdlet.GetVariableValue("MyInvocation").MyCommand.Name
         $jojobaName = $PSCmdlet.GetVariableValue("InputObject")
+
         if ($jojobaClassNameFolder = $PSCmdlet.GetVariableValue("PSCommandPath")) {
             $jojobaClassNameFolder = Split-Path -Leaf (Split-Path -Parent $jojobaClassNameFolder)
         } 
@@ -72,15 +73,18 @@ function Start-Jojoba {
             
             # Fill out the base test case, named after parts of the original caller
             $jojobaTestCase = [PSCustomObject] @{
-                UserName = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-                Suite = $JojobaSuite
+                UserName  = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+                Suite     = $JojobaSuite
                 Timestamp = Get-Date
-                Time = 0
+                Time      = 0
                 ClassName = $JojobaClassName
-                Name = $JojobaName
-                Result = "Pass"
+                Name      = $JojobaName
+                Result    = "Pass"
+                Message   = New-Object Collections.ArrayList
+                Data      = New-Object Collections.ArrayList
+            }
+            $jojobaAbort = [PSCustomObject] @{
                 Message = New-Object Collections.ArrayList
-                Data = New-Object Collections.ArrayList
             }
             
             $jojobaMessages = try {
@@ -118,32 +122,41 @@ function Start-Jojoba {
             # Calculate other useful information for the test case for use by Jenkins
             $jojobaTestCase.Time = ((Get-Date) - $jojobaTestCase.Timestamp).TotalSeconds
             
-            # If the calling function has a Write-Jojoba then send them a copy of the test. If this fails,
-            # it also makes the test fail and which is at least output somewhere.
-            if ($jojobaCallbackReference = Get-Command -Module $JojobaModuleName | Where-Object { $_.Name -eq $JojobaCallback }) {
-                try {
-                    &$jojobaCallbackReference $jojobaTestCase
-                } catch {
-                    Write-JojobaFail $_.ToString()
-                    [void] $jojobaTestCase.Data.Add((Resolve-Error $_ -AsString))
-                }
-            }
-
             # Write out the test case after getting rid of {} marks
             $jojobaTestCase.Message = $jojobaTestCase.Message -join [Environment]::NewLine
             $jojobaTestCase.Data = $jojobaTestCase.Data -join [Environment]::NewLine
-            $jojobaTestCase
+
+            if (!$jojobaAbort.Message) { 
+                # If the calling function has a Write-Jojoba then send them a copy of the test. If this fails,
+                # it also makes the test fail and which is at least output somewhere.
+                if ($jojobaCallbackReference = Get-Command -Module $JojobaModuleName | Where-Object { $_.Name -eq $JojobaCallback }) {
+                    try {
+                        &$jojobaCallbackReference $jojobaTestCase
+                    } catch {
+                        $jojobaTestCase.Message += [Environment]::NewLine + $_.ToString()
+                        $jojobaTestCase.Data += [Environment]::NewLine + (Resolve-Error $_ -AsString)
+                    }
+                }
+
+                $jojobaTestCase | Select-Object UserName, Suite, Timestamp, Time, ClassName, Name, Result, Message, Data
+            } else {
+                Write-Error ($jojobaAbort.Message -join [Environment]::NewLine)
+            }
             #endregion
         } else {
             #region Parallel run
             # These are arguments which will be splatted for use by PoshRSJob
             $jobArguments = @{
-                Throttle = $JojobaThrottle
-                Batch = $JojobaBatch
+                Throttle        = $JojobaThrottle
+                Batch           = $JojobaBatch
                 ModulesToImport = $JojobaModuleName
-                FunctionsToLoad = if (!$jojobaModuleName) { $JojobaClassName } else { $null }
-                ScriptBlock = [scriptblock]::Create("`$_ | $($JojobaClassName) -JojobaThrottle 0")
-                Verbose = $VerbosePreference
+                FunctionsToLoad = if (!$jojobaModuleName) {
+                    $JojobaClassName 
+                } else {
+                    $null 
+                }
+                ScriptBlock     = [scriptblock]::Create("`$_ | $($JojobaClassName) -JojobaThrottle 0")
+                Verbose         = $VerbosePreference
             }
 
             # Add any extra switches and parameters to the scriptblock so they can be passed to the caller.
@@ -163,7 +176,11 @@ function Start-Jojoba {
 
             Write-Verbose "Scheduling $($JojobaName) batch $($JojobaBatch) throttle $($jobArguments.Throttle) modules $($jobArguments.ModulesToImport) functions $($jobArguments.FunctionsToLoad) script $($jobArguments.ScriptBlock)"
             # Here we can continue to pipe in a complex object, or, revert back to the InputObject, for simplicity
-            $null = @(if ($PSCmdlet.GetVariableValue("_") -and $PSCmdlet.GetVariableValue("_") -isnot [string]) { $PSCmdlet.GetVariableValue("_") } else { $PSCmdlet.GetVariableValue("InputObject") }) | Start-RSJob @jobArguments
+            $null = @(if ($PSCmdlet.GetVariableValue("_") -and $PSCmdlet.GetVariableValue("_") -isnot [string]) {
+                    $PSCmdlet.GetVariableValue("_") 
+                } else {
+                    $PSCmdlet.GetVariableValue("InputObject") 
+                }) | Start-RSJob @jobArguments
             #endregion
         }
     }
