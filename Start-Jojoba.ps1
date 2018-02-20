@@ -147,6 +147,7 @@ function Start-Jojoba {
             #region Parallel run
             # These are arguments which will be splatted for use by PoshRSJob
             $jobArguments = @{
+                Name            = $JojobaName
                 Throttle        = $JojobaThrottle
                 Batch           = $JojobaBatch
                 ModulesToImport = $JojobaModuleName
