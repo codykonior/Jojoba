@@ -1,9 +1,9 @@
 install:
   - ps: | 
-      Install-Module Disposable -Force
-      Install-Module Error -Force
-      Install-Module Pester -Force
-      Install-Module PoshRSJob -Force
+      Install-Module Disposable -Force -AllowClobber
+      Install-Module Error -Force -AllowClobber
+      Install-Module Pester -Force -AllowClobber
+      Install-Module PoshRSJob -Force -AllowClobber
 
 build: false
 
