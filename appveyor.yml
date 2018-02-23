@@ -1,10 +1,9 @@
 install:
   - ps: | 
-    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-    Install-Module Disposable -Force
-    Install-Module Error -Force
-    Install-Module Pester -Force
-    Install-Module PoshRSJob -Force
+      Install-Module Disposable -Force
+      Install-Module Error -Force
+      Install-Module Pester -Force
+      Install-Module PoshRSJob -Force
 
 build: false
 
