@@ -161,12 +161,12 @@ Describe "jojoba" {
             { "ABC" | Test-NoInputObject -JojobaQuiet } | Should -Throw "Jojoba requires"
         }
     }
-    Context "should flag an error if no ValueFromRemainingArguments parameter exists" {
+    Context "should flag an error if no ValueFromRemainingArgument parameter exists" {
         It "with manual input" {
             { Test-NoRemainingArgument "ABC" -JojobaQuiet } | Should -Throw "Jojoba requires"
         }
         It "with pipeline input" {
-            { "ABC" | Test-NoRemainingArguments -JojobaQuiet } | Should -Throw "Jojoba requires"
+            { "ABC" | Test-NoRemainingArgument -JojobaQuiet } | Should -Throw "Jojoba requires"
         }
     }
     Context "works under normal conditions" {
