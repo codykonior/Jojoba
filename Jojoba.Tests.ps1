@@ -111,7 +111,6 @@ Describe "jojoba" {
         }
     }
 
-
     function Test-Slow {
         [CmdletBinding()]
         param (
@@ -150,6 +149,17 @@ Describe "jojoba" {
             Start-Sleep -Seconds 1
         }
         end {
+        }
+    }
+
+    Push-Location
+
+    BeforeEach {
+        $env:JENKINS_SERVER_COOKIE = $null
+        Set-Location $TestDrive
+
+        if (Test-Path .\Jojoba.xml) {
+            Remove-Item .\Jojoba.xml
         }
     }
 
@@ -217,30 +227,25 @@ Describe "jojoba" {
         }
     }
     Context "jenkins functionality works" {
-        Set-Location TestDrive:
-
         It "won't trigger under normal conditions" {
-            if (Test-Path .\Jojoba.xml) {
-                Remove-Item .\Jojoba.xml
-            }
             "ABC", "CDE" | Test-Pass -JojobaQuiet
             ".\Jojoba.xml" | Should -Not -Exist
         }
         It "works when explicitly defined" {
-            if (Test-Path .\Jojoba.xml) {
-                Remove-Item .\Jojoba.xml
-            }
-            "ABC", "CDE" | Test-Pass -JojobaQuiet -JojobaJenkins
+            "ABC", "CDE" | Test-Pass -JojobaQuiet -JojobaJenkins .\Jojoba.xml
             ".\Jojoba.xml" | Should -Exist
         }
         It "works when the environment variable is set" {
+            $env:JENKINS_SERVER_COOKIE = "123"
+            "ABC", "CDE" | Test-Pass -JojobaQuiet
+            ".\Jojoba.xml" | Should -Exist
+        }
+
+        AfterEach {
             if (Test-Path .\Jojoba.xml) {
                 Remove-Item .\Jojoba.xml
             }
-            $env:JENKINS_SERVER_COOKIE = "123"
-            "ABC", "CDE" | Test-Pass -JojobaQuiet
             $env:JENKINS_SERVER_COOKIE = $null
-            ".\Jojoba.xml" | Should -Exist
         }
     }
 
@@ -267,6 +272,8 @@ Describe "jojoba" {
                 $results | Where-Object { $_.Result -ne "Pass" } | Should -BeNullOrEmpty
             }
         }
-
     }
+
+    Pop-Location
 }
+

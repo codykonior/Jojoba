@@ -99,9 +99,9 @@ function Get-JojobaArgument {
         if ($arguments -notcontains "-JojobaJenkins") {
             $arguments += "-JojobaJenkins"
             if ($env:JENKINS_SERVER_COOKIE) {
-                $arguments += $true
+                $arguments += ".\Jojoba.xml"
             } else {
-                $arguments += $false
+                $arguments += $null
             }
         }
         if ($arguments -notcontains "-JojobaPassThru") {
@@ -110,19 +110,24 @@ function Get-JojobaArgument {
 
         $Caller.SessionState.PSVariable.Set($argumentName, $arguments)
 
-        $jojoba = @{}
+        $settings = @{}
 
         for ($i = 0; $arguments -and $i -lt $arguments.Count; $i++) {
             if ($arguments[$i] -and $arguments[$i] -match '^-Jojoba(.*?)(?::?)$') {
                 if (($i + 1) -eq $arguments.Count -or $arguments[$i + 1] -like "-*") {
-                    $jojoba[$Matches[1]] = $true
+                    $settings[$Matches[1]] = $true
                 } else {
-                    $jojoba[$Matches[1]] = $arguments[++$i]
+                    $settings[$Matches[1]] = $arguments[++$i]
                 }
             }
         }
 
-        $jojoba
+        # Resolve full path
+        if ($settings.Jenkins) {
+            $settings.Jenkins = Join-Path (Resolve-Path (Split-Path $settings.Jenkins)) (Split-Path $settings.Jenkins -Leaf)
+        }
+
+        $settings
     }
 
     end {

@@ -27,7 +27,6 @@ function Publish-Jojoba {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "global:LASTEXITCODE", Justification="Required for Jenkins")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "failed", Justification="Bug in Analyzer")]
     param (
-        $OutputPath = ".\Jojoba.xml"
     )
 
     begin {
@@ -84,7 +83,7 @@ function Publish-Jojoba {
     end {
         if ($settings.Jenkins) {
             if ($jobs) {
-                Write-JojobaXml $jobs -OutputPath $OutputPath
+                Write-JojobaXml $jobs -OutputPath $settings.Jenkins
             }
             if ($failed) {
                 $global:LASTEXITCODE = 1
