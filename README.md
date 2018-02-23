@@ -18,9 +18,6 @@
             in the template (apart from adding other aliases).
 		$JojobaBatch which is used internally for pooling the entire pipeline
             into one runspace.
-        $JojobaCallback which is the name of a function (within the calling
-            module ONLY) to which completed tests should be passed to, this is
-            to integrate writing them out to various database locations.
 		$JojobaJenkins to enable writing Jenkins jUnit XML to disk. This is
             only required if you need to force it - it can detect Jenkins and
             will always write XML in those cases.
@@ -106,10 +103,9 @@
 
 ## Example 2
 	A more complete function. In this case, the suite name can be overridden,
-    and your module can define a "Write-JojobaCallback" function which will
-    be called with all jUnit records as they are created so they can be written
-    out to other destinations in a format of your choosing. This is useful to
-    send data to a database alongside XML and Jenkins.
+    and your module can use -PassThru to pass the jUnit records to a function 
+	which can be written out to a destination in a format of your choosing.
+	This is useful to send data to a database alongside XML and Jenkins.
 
 	function Test-Template {
 		[CmdletBinding()]
@@ -119,7 +115,6 @@
             <# ... extra parameters .. #>
 
 			[string] $JojobaBatch = [System.Guid]::NewGuid().ToString(),
-            [string] $JojobaCallback = "Write-JojobaCallback",
 			[switch] $JojobaJenkins,
             [string] $JojobaSuite = "My Suite Name",
 			[int]    $JojobaThrottle = $env:NUMBER_OF_PROCESSORS

@@ -1,4 +1,4 @@
-[CmdletBinding()] 
+[CmdletBinding()]
 param(
 )
 
@@ -7,11 +7,11 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-foreach ($fileName in (Get-ChildItem $PSScriptRoot "*.ps1" -Recurse)) {
+Get-ChildItem $PSScriptRoot -Recurse -PipelineVariable file | Where-Object { $file.FullName -match "^[^\.]+-[^\.]+\.ps1$" } | ForEach-Object {
     try {
-	    Write-Verbose "Loading function from path '$fileName'."
-	    . $fileName.FullName
+        Write-Verbose "Loading function from path '$($file.FullName)'."
+        . $file.FullName
     } catch {
-	    Write-Error $_
+        Write-Error "Failed to load $($file.FullName): $_"
     }
 }

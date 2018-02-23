@@ -13,64 +13,84 @@ Output path for Jojoba XML. This is only triggered if JojobaThrottle -ne 0, $Joj
 None. All inputs are taken from the calling function ($JojobaBatch, $JojobaJenkins, and $JojobaThrottle).
 
 .OUTPUTS
-Test case data from all processed jobs. If a job fails, which should not happen, its output will be returned also. 
+Test case data from all processed jobs. If a job fails, which should not happen, its output will be returned also.
+
+Throttle
+Batch
+Jenkins
+Passthru
 
 #>
 
 function Publish-Jojoba {
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "global:LASTEXITCODE", Justification="Required for Jenkins")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "failed", Justification="Bug in Analyzer")]
     param (
         $OutputPath = ".\Jojoba.xml"
     )
 
     begin {
+        $settings = Get-JojobaArgument $PSCmdlet
+        $jobs = New-Object Collections.ArrayList
+        $failed = $false
     }
 
     process {
         #region Retrieve and clean up results if run in parallel mode
-        if ($PSCmdlet.GetVariableValue("JojobaThrottle")) {
-            $completedJobs = New-Object Collections.ArrayList
-            $jobErrors = New-Object Collections.ArrayList
+        if ($settings.Throttle) {
+            $newJobs = New-Object Collections.ArrayList
 
             # Get, receive, and remove jobs as they complete. Any errors should be caught
             # and encapsulated as part of a test result. But in case they don't, then we
             # deal with them separately.
-            Get-RSJob -Batch $PSCmdlet.GetVariableValue("JojobaBatch") | Wait-RSJob -ShowProgress | ForEach-Object {
-                if ($_.State -ne "Failed" -and !$_.HasErrors) {
-                    [void] $completedJobs.Add((Receive-RSJob $_))
-                } else {
-                    [void] $jobErrors.Add((Receive-RSJob $_))
+            Get-RSJob -Batch $settings.Batch | Wait-RSJob -ShowProgress | ForEach-Object {
+                if ($_.State -eq "Failed" -or $_.HasErrors) {
+                    $failed = $true
                 }
-                
+
+                $jobResult = Receive-RSJob $_
+                [void] $jobs.Add($jobResult)
+                [void] $newJobs.Add($jobResult)
+
+                # Write out all the good test information
+                if (!$settings.Quiet) {
+                    $jobResult | Select-Object UserName, Suite, Timestamp, Time, ClassName, Name, Result, Message, Data | Format-List | Out-String -Stream -PipelineVariable line | ForEach-Object {
+                        if ($line -match "^(Name.*?:)(.*)`$") {
+                            Write-Host $Matches[1] -NoNewline -ForegroundColor DarkGray
+                            Write-Host $Matches[2] -ForegroundColor White
+                        } elseif ($line -match "^(Result.*)(Pass)`$") {
+                            Write-Host $Matches[1] -NoNewline -ForegroundColor DarkGray
+                            Write-Host $Matches[2] -ForegroundColor Green
+                        } elseif ($line -match "^(Result.*)(Fail)`$") {
+                            Write-Host $Matches[1] -NoNewline -ForegroundColor DarkGray
+                            Write-Host $Matches[2] -ForegroundColor Red
+                        } else {
+                            Write-Host $line -ForegroundColor DarkGray
+                        }
+                    }
+                }
+
                 $_
             } | Remove-RSJob
-            
-            # Write out the XML file if there's output, and we're either asked or Jenkins is in use
-            if ($completedJobs -and ($PSCmdlet.GetVariableValue("JojobaJenkins") -or $env:JENKINS_SERVER_COOKIE)) {
-                Write-JojobaXml $completedJobs -OutputPath $OutputPath
-            }
 
-            # Write out all the good test information
-            if ($completedJobs) {
-                $completedJobs
-            }
-            if ($jobErrors) {
-                # Write out any failed information. This will mess up the pipeline, but that's
-                # okay, because if this happens then something has gone seriously wrong, and it
-                # can show up in the Jenkins build console
-                $jobErrors
-
-                # Mark any Jenkins build as failed
-                $global:LASTEXITCODE = 1
-            } else {
-                # Mark the build as a success (though Jenkins may interpret the test results
-                # and mark it as failed for other reasons)
-                $global:LASTEXITCODE = 0
+            if ($settings.PassThru -and $newJobs) {
+                $newJobs
             }
         }
         #endregion
     }
 
     end {
+        if ($settings.Jenkins) {
+            if ($jobs) {
+                Write-JojobaXml $jobs -OutputPath $OutputPath
+            }
+            if ($failed) {
+                $global:LASTEXITCODE = 1
+            } else {
+                $global:LASTEXITCODE = 0
+            }
+        }
     }
 }
