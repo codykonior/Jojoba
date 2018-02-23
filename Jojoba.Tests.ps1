@@ -217,6 +217,8 @@ Describe "jojoba" {
         }
     }
     Context "jenkins functionality works" {
+        Set-Location TestDrive:
+
         It "won't trigger under normal conditions" {
             if (Test-Path .\Jojoba.xml) {
                 Remove-Item .\Jojoba.xml
@@ -267,8 +269,4 @@ Describe "jojoba" {
         }
 
     }
-}
-
-if (Test-Path .\Jojoba.xml) {
-    Remove-Item .\Jojoba.xml
 }
