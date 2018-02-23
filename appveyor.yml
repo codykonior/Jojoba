@@ -8,7 +8,7 @@ install:
 build: false
 
 test_script:
-  - ps: $env:PSModulePath = "$((Get-Location).Path)\;$($env:PSModulePath)"
+  - ps: $env:PSModulePath = "$((Get-Item ..).FullName)\;$($env:PSModulePath)"
   - ps: Import-Module Jojoba -Force
   - ps: $res = Invoke-Pester -Path "." -OutputFormat NUnitXml -OutputFile TestsResults.xml -PassThru
   - ps: (New-Object 'System.Net.WebClient').UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\TestsResults.xml))
