@@ -16,15 +16,17 @@ ___Please note: This version is in Alpha and documentation is still being update
 Install-Module -Name Jojoba
 ```
 
-It is written for the current versions of PowerShell on Windows - 5.1 and 6.0.1.
+It is written for Windows PowerShell 5.1 and has also been tested on PowerShell Core 6.0.1 for Windows.
 
 #### Example
 
-Any function using Jojoba needs:
-* A ValueFromPipeline string argument with a Name or Alias of InputObject.
-* A ValueFromRemainingArguments argument of any name. Any switches for Jojoba use the -Jojoba prefix.
+Any function using Jojoba needs a minimum of:
+* A string type ValueFromPipeline argument with a name or alias of InputObject. This may also have an attribute of ValueFromPipelineByPropertyValue.
+* A ValueFromRemainingArguments argument of any name. Any switches for Jojoba will use the -Jojoba prefix.
 * `Start-Jojoba {}` wrapping code in the process block.
 * `Publish-Jojoba` in the end block.
+
+It's fine for other parameters to be in use as well.
 
 ``` powershell
 function Test-ComputerPing {
@@ -57,11 +59,11 @@ function Test-ComputerPing {
 
 * When the pipeline starts a new runspace is created.
 * Any pipelined input will be queued into those slots.
-* The results are output n unit test format.
+* The results are written to the host in a unit test format.
   * Suite = Module
   * Class = Function
   * Name = Pipeline
-* Tests pass by default if no terminating exceptions are thrown.
+* Tests will pass by default if no terminating exceptions are thrown.
 
 ![][2]
 
@@ -80,7 +82,7 @@ Parameters are passed to your function through the RemainingArguments variable n
 * `-JojobaSuite` can be used to override the Suite name in the output.
 * `-JojobaClassName` can be used to override the ClassName in the output.
 * `-JojobaBatch` can be used to share a runspace pool between multiple function calls, otherwise a new one is used each time.
-* `-JojobaJenkins .\Jojoba.xml` will write the JUnit XML results to the specified file. If you are running under Jenkins, this isn't necessary, and this file will be written to automatically.
+* `-JojobaJenkins .\Jojoba.xml` will write the JUnit XML results to the specified file. If you are running under Jenkins, this isn't necessary, and this file will be written to that location automatically.
 
 #### Need more?
 
