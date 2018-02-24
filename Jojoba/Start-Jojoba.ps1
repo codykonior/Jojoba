@@ -86,6 +86,7 @@ function Start-Jojoba {
                     # Exceptions also get wrapped in an ErrorRecord
                     [void] $jojobaTestCase.Data.Add($jojobaMessage)
                 } else {
+                    # Expand complex objects
                     [void] $jojobaTestCase.Data.Add(($jojobaMessage | Format-List | Out-String))
                 }
             }
@@ -98,7 +99,7 @@ function Start-Jojoba {
             $jojobaTestCase.Data = $jojobaTestCase.Data -join [Environment]::NewLine
 
             if (!$jojobaAbort.Message) {
-                $jojobaTestCase | Select-Object UserName, Suite, Timestamp, Time, ClassName, Name, Result, Message, Data
+                $jojobaTestCase
             } else {
                 Write-Error ($jojobaAbort.Message -join [Environment]::NewLine)
             }
@@ -124,7 +125,7 @@ function Start-Jojoba {
             # This can't handle complex objects - those should be piped in instead.
             # Some exceptions for Jojoba flags are included.
             $PSCmdlet.GetVariableValue("MyInvocation").BoundParameters.GetEnumerator() | ForEach-Object {
-                if ($_.Key -ne $argument.InputName -and $_.Key -notlike "Jojoba*" -and $_.Key -ne $argument.ArgumentName) {
+                if ($_.Key -ne $argument.InputName -and $_.Key -ne $argument.ArgumentName) {
                     if ($_.Value -is [System.Management.Automation.SwitchParameter]) {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key):`$$($_.Value)")
                     } elseif ($_.Value -is [string]) {

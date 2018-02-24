@@ -21,12 +21,12 @@ It is written for Windows PowerShell 5.1 and has also been tested on PowerShell 
 #### Example
 
 Any function using Jojoba needs a minimum of:
-* A string type ValueFromPipeline argument with a name or alias of InputObject. This may also have an attribute of ValueFromPipelineByPropertyValue.
+* A string type ValueFromPipeline or ValueFromPipelineByPropertyName argument with a name or alias of InputObject.
 * A ValueFromRemainingArguments argument of any name. Any switches for Jojoba will use the -Jojoba prefix.
 * `Start-Jojoba {}` wrapping code in the process block.
 * `Publish-Jojoba` in the end block.
 
-It's fine for other parameters to be in use as well.
+Any parameters not sent through the pipeline will be serialized to strings and so should be limited to simple types: ints, strings, bools, and switches.
 
 ``` powershell
 function Test-ComputerPing {
@@ -64,6 +64,7 @@ function Test-ComputerPing {
   * Class = Function
   * Name = Pipeline
 * Tests will pass by default if no terminating exceptions are thrown.
+* Failure and skip messages are not terminating by and of themselves.
 
 ![][2]
 
@@ -71,6 +72,7 @@ function Test-ComputerPing {
 
 * `Write-JojobaSkip` will mark the output as skipped, for example if some pre-condition is not met.
 * `Write-JojobaAbort` will terminate the block with an error which will not be wrapped in the JUnit format. This is rarely needed and generally not a good idea.
+* `Write-JojobaProperty` upserts a hashtable property bag to the unit test. Unit test objects can be returned with -JojobaPassThru. These properties will not display on the screen or appear in the JUnit XML output however.
 
 #### What options are there?
 
