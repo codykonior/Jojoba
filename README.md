@@ -8,7 +8,7 @@ Provides a simple method of building parallel capability into PowerShell functio
 
 I use it for operational validation of large server environments because it makes it easy to write tests that can run quickly and be understood interactively and by Jenkins.
 
-__Please note: This version is in Alpha and documentation is being updated.__
+___Please note: This version is in Alpha and documentation is still being updated.___
 
 #### Download and install Jojoba using PowerShell:
 
@@ -16,7 +16,7 @@ __Please note: This version is in Alpha and documentation is being updated.__
 Install-Module -Name Jojoba
 ```
 
-It is written for Windows PowerShell 5.1 and has been tested on PowerShell Core 6.1 for Windows.
+It is written for the current versions of PowerShell on Windows - 5.1 and 6.0.1.
 
 #### Example
 
@@ -41,8 +41,9 @@ function Test-ComputerPing {
     }
     process {
         Start-Jojoba {
-            if (!(Test-NetConnection $ComputerName).PingSucceeded) {
-                Write-JojobaFail "Ping failed"
+            ping $ComputerName -n 1
+            if (!$?) {
+                Write-JojobaFail "Connection failed"
             }
         }
     }

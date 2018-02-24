@@ -4,7 +4,7 @@ TOPIC
 SHORT DESCRIPTION
     Jojoba is a small set of DSL keywords to use in a function template. These
     wrap the function to automatically scale out using PoshRSJob, gather all
-    output data to return in a jUnit result format, and optionally write it 
+    output data to return in a JUnit result format, and optionally write it 
     out to disk in a jUnit XML format that Jenkins can understand.
     
 LONG DESCRIPTION

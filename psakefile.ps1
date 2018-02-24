@@ -17,7 +17,8 @@ Task FunctionsToExport {
         $_.Group | Should -HaveCount 1
     }
 
-    Update-ModuleManifest -Path "$($moduleName)\$($moduleName).psd1" -FunctionsToExport $functionNames
+    # Temporary disabled because it's blasting some of the PSData tags!
+    # Update-ModuleManifest -Path "$($moduleName)\$($moduleName).psd1" -FunctionsToExport $functionNames
     Import-Module $moduleName -Force -Verbose:$false
 }
 
