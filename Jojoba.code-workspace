@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"powershell.integratedConsole.showOnStartup": false,
+		"editor.formatOnPaste": false,
+		"editor.formatOnSave": true,
+		"editor.formatOnType": false,
+		"powershell.codeFormatting.preset": "OTBS"
+	}
+}

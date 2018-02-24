@@ -66,51 +66,32 @@ function Get-JojobaArgument {
             Write-Error "Jojoba can only be used from within functions"
         }
 
-        if ($arguments -notcontains "-JojobaArgumentName") {
-            $arguments += "-JojobaArgumentName", $argumentName
-        }
-        if ($arguments -notcontains "-JojobaInputName") {
-            $arguments += "-JojobaInputName", $inputName
-        }
-
+        # If this is the first run, generate and store the batch number
         if ($arguments -notcontains "-JojobaBatch") {
             $arguments += "-JojobaBatch", [guid]::NewGuid().ToString()
+            $Caller.SessionState.PSVariable.Set($argumentName, $arguments)
         }
 
-        if ($arguments -notcontains "-JojobaSuite") {
-            $arguments += "-JojobaSuite", $callerModuleName
-        }
-        if ($arguments -notcontains "-JojobaClassName") {
-            $arguments += "-JojobaClassName", $callerClassName
-        }
-        if ($arguments -notcontains "-JojobaName") {
-            $arguments += "-JojobaName", $Caller.GetVariableValue($inputName)
-        }
+        $settings = @{
+            # Internal use
+            ArgumentName = $argumentName
+            InputName = $inputName
 
-        if ($arguments -notcontains "-JojobaQuiet") {
-            $arguments += "-JojobaQuiet", $false
-        }
-        if ($arguments -notcontains "-JojobaPassThru") {
-            $arguments += "-JojobaPassThru", $false
-        }
-        if ($arguments -notcontains "-JojobaThrottle") {
-            $arguments += "-JojobaThrottle", $env:NUMBER_OF_PROCESSORS
-        }
-        if ($arguments -notcontains "-JojobaJenkins") {
-            $arguments += "-JojobaJenkins"
-            if ($env:JENKINS_SERVER_COOKIE) {
-                $arguments += ".\Jojoba.xml"
+            # Automatic populations
+            Suite = $callerModuleName
+            ClassName = $callerClassName
+            Name = $Caller.GetVariableValue($inputName)
+
+            # Manual switches
+            Quiet = $false
+            PassThru = $false
+            Throttle = $env:NUMBER_OF_PROCESSORS
+            Jenkins = if ($env:JENKINS_SERVER_COOKIE) {
+                ".\Jojoba.xml"
             } else {
-                $arguments += $null
+                $false
             }
         }
-        if ($arguments -notcontains "-JojobaPassThru") {
-            $arguments += "-JojobaPassThru:", $false
-        }
-
-        $Caller.SessionState.PSVariable.Set($argumentName, $arguments)
-
-        $settings = @{}
 
         for ($i = 0; $arguments -and $i -lt $arguments.Count; $i++) {
             if ($arguments[$i] -and $arguments[$i] -match '^-Jojoba(.*?)(?::?)$') {
