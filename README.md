@@ -78,13 +78,17 @@ function Test-ComputerPing {
 
 Parameters are passed to your function through the RemainingArguments variable not to Jojoba directly.
 
-* `-JojobaThrottle` accepts an integer to determine how many jobs will be spun up. It defaults to match the number of CPU cores.
+Common:
+
 * `-JojobaQuiet` will suppress the Write-Host output.
 * `-JojobaPassThru` will return the unit test results as standard objects.
-* `-JojobaSuite` can be used to override the Suite name in the output.
-* `-JojobaClassName` can be used to override the ClassName in the output.
+* `-JojobaJenkins .\Jojoba.xml` will write the JUnit XML results to the specified file. This isn't necessary if you are running under Jenkins as it will be detected and written to that location automatically.
+
+Uncommon:
+
+* `-JojobaSuite` and `-JojobaClassName` can be used to override these properties in the output, though `Write-JojobaProperty` can do the same while inside `Start-RSJob`.
 * `-JojobaBatch` can be used to share a runspace pool between multiple function calls, otherwise a new one is used each time.
-* `-JojobaJenkins .\Jojoba.xml` will write the JUnit XML results to the specified file. If you are running under Jenkins, this isn't necessary, and this file will be written to that location automatically.
+* `-JojobaThrottle` accepts an integer to determine how many jobs will be spun up. It defaults to match the number of CPU cores.
 
 #### Need more?
 
