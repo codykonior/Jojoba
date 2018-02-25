@@ -14,7 +14,7 @@ ___Please note: This version is in Alpha and documentation is still being update
 Install-Module -Name Jojoba
 ```
 
-It is written for Windows PowerShell 5.1 and has also been tested on PowerShell Core 6.0.1 for Windows.
+It is written for Windows PowerShell 5.1 and has also been tested on PowerShell Core 6.0.1 for Windows (but may have some remaining issues there).
 
 #### Example
 
