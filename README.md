@@ -14,7 +14,7 @@ Why does it exist? Because:
 
 Jojoba does away with all of this so you don't need to think about it or maintain it yourself anymore. Back-end job functionality is provided by the world-class [PoshRSJob][1] runspace management module.
 
-___Please note: This version is in Alpha and documentation is still being updated.___
+___Please note: There are [breaking changes](#need-more) from previous versions of Jojoba.___
 
 #### Download and install Jojoba using PowerShell:
 
@@ -124,16 +124,18 @@ Uncommon:
 
 #### Need more?
 
-[Watch the hour long video][3]. There have been some changes in templates since the version of Jojoba presented there:
+[Watch the hour long video][3].
 
-* InputObject can now be an alias rather than a parameter name.
-* $JojobaBatch and $JojobaThrottle should not be hardcoded into your function definition. A ValueFromRemainingArguments parameter is required instead.
-* Jojoba output is done through Write-Host rather than returning objects. If you need the object then you can use -JojobaPassThru. If you don't want to see the Write-Host output use -JojobaQuiet.
+There have been some changes in templates since the version of Jojoba presented there:
 
-Also:
+* `$InputObject` can now be a parameter alias rather than being forced as the parameter name.
+* `$JojobaBatch` and `$JojobaThrottle` should not be hardcoded into your function definition. A ValueFromRemainingArguments parameter is required instead.
+* Jojoba output is done through Write-Host rather than returning objects. If you need the object then you can use `-JojobaPassThru`. If you don't want to see the Write-Host output use `-JojobaQuiet`.
 
-* Write-JojobaAbort is no longer supported. Use Write-JojobaFail -CriticalFailure instead. The output is slightly different.
-* $JojobaCallback is no longer supported. Use -JojobaPassthru instead to pipe the test object somewhere.
+Also not presented in the video:
+
+* `Write-JojobaAbort` is no longer supported. Use `Write-JojobaFail -CriticalFailure` instead. The output is slightly different.
+* `$JojobaCallback` is no longer supported. Use `-JojobaPassthru` instead to pipe the test object somewhere.
 
 [1]: Images/Jojoba.png
 [2]: Images/Test-ComputerPing.gif

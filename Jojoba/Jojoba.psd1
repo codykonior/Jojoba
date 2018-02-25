@@ -124,7 +124,7 @@
             RequireLicenseAcceptance = "False"
 
             # Indicates this is a pre-release/testing version of the module.
-            Prerelease               = '-alpha'
+            Prerelease               = ''
 
         } # End of PSData hashtable
 
