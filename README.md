@@ -67,7 +67,7 @@ function Test-ComputerPing {
 }
 ```
 
-### What happens?
+#### What happens?
 
 ![][2]
 
