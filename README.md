@@ -12,7 +12,7 @@ Why does it exist? Because:
 * And once you start batching those tests together it becomes painful to separate jobs, job output, exceptions and errors.
 * And once you've solved that it becomes difficult to integrate the different styles of output with other scripts and software.
 
-Jojoba does away with all of this so you don't need to think about it or maintain it yourself anymore. Back-end job functionality is provided by the world-class [PoshRSJob][1] runspace management module.
+Jojoba does away with all of this so you don't need to think about it or maintain it yourself anymore. Back-end job functionality is provided by the world-class [PoshRSJob][4] runspace management module.
 
 ___Please note: There are [breaking changes](#need-more) from previous versions of Jojoba.___
 
