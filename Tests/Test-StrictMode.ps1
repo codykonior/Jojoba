@@ -1,4 +1,4 @@
-function Test-UnsafeStrictMode {
+function Test-StrictMode {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]

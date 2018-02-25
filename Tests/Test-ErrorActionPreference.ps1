@@ -1,4 +1,4 @@
-function Test-UnsafeErrorActionPreference {
+function Test-ErrorActionPreference {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
