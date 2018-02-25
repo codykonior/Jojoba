@@ -24,7 +24,7 @@ Any function using Jojoba needs a minimum of:
 * `Start-Jojoba {}` wrapping all code in the process block.
 * `Publish-Jojoba` in the end block.
 
-Any parameters not sent through the pipeline will be serialized to strings and so should be limited to simple types: ints, strings, string arrays, bools, and switches.
+Any additional function parameters not sent through the pipeline will be serialized to strings and so should be limited to simple types: ints, strings, string arrays, bools, and switches.
 
 ``` powershell
 function Test-ComputerPing {
@@ -70,7 +70,9 @@ function Test-ComputerPing {
 
 * `Write-JojobaSkip` will mark the output as skipped, for example if some pre-condition is not met.
 * `Write-JojobaFail -CriticalFailure` will flag the entire run as critically failed. This results in an $env:LASTEXITCODE of 1 and a Write-Error after all test results has been passed on. This is useful to indicate that a test didn't just fail, but requires investigation into the script logic.
-* `Write-JojobaProperty` upserts a hashtable property bag to the unit test. Unit test objects can be returned with -JojobaPassThru. These properties will not display on the screen or appear in the JUnit XML output however.
+* `Write-JojobaProperty` takes a hashtable of properties and will upsert them to the unit test object, which can be returned with -JojobaPassThru. They won't appear on screen or in any JUnit XML output however.
+
+Pester `| Should` test statements can also be used to fail a test, as these will throw a terminating exception which will be caught by Jojoba as a failure.
 
 #### What options are there?
 

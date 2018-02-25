@@ -40,6 +40,18 @@ Describe "jojoba" {
             { "ABC" | Test-Pass -JojobaQuiet } | Should -Not -Throw
         }
     }
+    Context "special failures are caught" {
+        It "a throw / exception" {
+            $result = "ABC" | Test-FailException -JojobaQuiet -JojobaPassThru
+            $result.Result | Should -Be Fail
+            $result.Message | Should -Be "Fail because of ABC"
+        }
+        It "a Pester test statement" {
+            $result = "ABC" | Test-FailPester -JojobaQuiet -JojobaPassThru
+            $result.Result | Should -Be Fail
+            $result.Message | Should -Match "Expected strings to be the same"
+        }
+    }
     Context "has working switches" {
         It "quiet is quiet" {
             $result = "ABC" | Test-Pass -JojobaQuiet *>&1
@@ -62,20 +74,25 @@ Describe "jojoba" {
                 $results | ForEach-Object { $_.Suite | Should -BeNullOrEmpty }
             }
             It "has correct Name and Data" {
-                $results[0].Name | Should -Be "ABC"
-                $results[0].Data | Should -Be "$type ABC"
-                $results[1].Name | Should -Be "CDE"
-                $results[1].Data | Should -Be "$type CDE"
+                $results.Count | Should -Be 2
+                foreach ($result in $results) {
+                    $result.Name | Should -MatchExactly "(ABC|CDE)"
+                    $result.Data | Should -Be "$type $($result.Name)"
+                }
             }
             if ($type -in "Fail", "Skip") {
                 It "shows a correct Message" {
-                    $results[0].Message | Should -Be "$($type) because of ABC"
-                    $results[1].Message | Should -Be "$($type) because of CDE"
+                    $results.Count | Should -Be 2
+                    foreach ($result in $results) {
+                        $result.Message | Should -Be "$type because of $($result.Name)"
+                    }
                 }
             }
             It "has a result of $type" {
-                $results[0].Result | Should -Be "$type"
-                $results[1].Result | Should -Be "$type"
+                $results.Count | Should -Be 2
+                foreach ($result in $results) {
+                    $result.Result | Should -Be $type
+                }
             }
         }
     }
