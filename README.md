@@ -7,10 +7,10 @@
 Jojoba wraps function internals to run their pipeline inputs in parallel and output in a test format which can be understood by users, other scripts, and PowerShell. It does this by providing a simple template to follow with a few optional keywords. It's useful for fast, simple, and reliable testing and operational validation of large server environments.
 
 Why does it exist? Because:
-* When you have a lot of tests, or a lot of objects to run those tests against, things take too long to run.
-* And so when you start to add Start-RSJob, Wait-RSJob, Receive-RSJob patterns to every test, it becomes painful to maintain.
-* And once you start batching those tests together it becomes painful to manage jobs, job ouptut, exceptions and errors.
-* And once you've handled that it becomes difficult to integrate the different styles of output with other scripts and software.
+* The more tests you have, and the more objects you have to test, the longer everything takes to run.
+* When you start running them in parallel with Start/Wait/Receive/Remove RSJob patterns it becomes painful to maintain.
+* And once you start batching those tests together it becomes painful to separate jobs, job output, exceptions and errors.
+* And once you've solved that it becomes difficult to integrate the different styles of output with other scripts and software.
 
 Jojoba does away with all of this so you don't need to think about it or maintain it yourself anymore. Back-end job functionality is provided by the world-class [PoshRSJob][1] runspace management module.
 
