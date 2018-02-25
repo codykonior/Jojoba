@@ -11,6 +11,10 @@
 		"editor.formatOnType": false,
 		"powershell.codeFormatting.preset": "OTBS",
 		"files.trimTrailingWhitespace": true,
-		"files.trimFinalNewlines": true
+		"files.trimFinalNewlines": true,
+		"editor.rulers": [
+			80,
+			132
+		]
 	}
 }

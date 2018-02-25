@@ -1,16 +1,25 @@
 <#
 
 .SYNOPSIS
+Extract -Jojoba parameters passed to the function calling Jojoba.
 
 .DESCRIPTION
+Jojoba doesn't accept parameters directly, instead any parameters passed to
+the calling function with a -Jojoba prefix are picked up.
 
-# .PARAMETER
+.PARAMETER Caller
+The top-level $PSCmdlet variable as it exists in Jojoba, before this function
+is called.
 
 .EXAMPLE
+$configuration = Get-JojobaConfiguration $PSCmdlet
+
+.NOTES
+This is for internal use by Jojoba and should not be called externally.
 
 #>
 
-function Get-JojobaArgument {
+function Get-JojobaConfiguration {
     [CmdletBinding()]
     [OutputType("System.Collections.Hashtable")]
     param (
@@ -78,6 +87,7 @@ function Get-JojobaArgument {
             Function     = $callerFunction
             ArgumentName = $argumentName
             InputName    = $inputName
+            Unsafe       = $false
 
             # Automatic populations
             Suite        = $callerModule

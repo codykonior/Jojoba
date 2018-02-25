@@ -1,21 +1,18 @@
 <#
 
 .SYNOPSIS
-Parallel processing with test case output and Jenkins integration.
+Creates a job for each incoming pipeline object and captures the output into a
+test case object.
 
 .DESCRIPTION
-For a Jojoba template function this will be the main call in the process {} block. All processing should occur within here.
+Start-Jojoba is used in the process {} block of a function that uses Jojoba.
+It should wrap all the code within that block.
 
 .PARAMETER ScriptBlock
-The test to carry out. It must use $InputObject or $_.
+This is the logic to carry out.
 
 .INPUTS
 All inputs aside from the ScriptBlock are taken from the calling function.
-    $settings.Batch
-    $settings.Callback (optional, for writing events elsewhere)
-    $settings.Jenkins (optional, for forcing a write of XML)
-    $settings.Throttle (required for batch runs, optional for testing)
-    $settings.Suite (optional)
 
 .OUTPUTS
 A test case object.
@@ -37,20 +34,20 @@ function Start-Jojoba {
     }
 
     process {
-        $settings = Get-JojobaArgument $PSCmdlet
+        $configuration = Get-JojobaConfiguration $PSCmdlet
 
-        if (!$settings.Throttle) {
+        if (!$configuration.Throttle) {
             #region Direct run
-            Write-Verbose "Starting inside thread for $($settings.Name)"
+            Write-Verbose "Starting inside thread for $($configuration.Name)"
 
-            # Fill out the base test case, named after parts of the original caller
+            # Fill out the test case
             $jojobaTestCase = [PSCustomObject] @{
                 UserName        = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-                Suite           = $settings.Suite
+                Suite           = $configuration.Suite
                 Timestamp       = Get-Date
                 Time            = 0
-                ClassName       = $settings.ClassName
-                Name            = $settings.Name
+                ClassName       = $configuration.ClassName
+                Name            = $configuration.Name
                 Result          = "Pass"
                 Message         = New-Object Collections.ArrayList
                 Data            = New-Object Collections.ArrayList
@@ -103,26 +100,31 @@ function Start-Jojoba {
             #region Parallel run
             # These are arguments which will be splatted for use by PoshRSJob
             $jobArguments = @{
-                Name            = $settings.Function
-                Throttle        = $settings.Throttle
-                Batch           = $settings.Batch
-                ModulesToImport = $settings.Suite
-                FunctionsToLoad = if (!$settings.Module) {
-                    $settings.Function
+                Name            = $configuration.Function
+                Throttle        = $configuration.Throttle
+                Batch           = $configuration.Batch
+                ModulesToImport = $configuration.Suite
+                FunctionsToLoad = if (!$configuration.Module) {
+                    $configuration.Function
                 } else {
                     $null
                 }
-                ScriptBlock     = [scriptblock]::Create("`$_ | $($settings.Function) -JojobaThrottle 0")
                 Verbose         = $VerbosePreference
             }
+            if ($configuration.Unsafe) {
+                $jobArguments.ScriptBlock = [scriptblock]::Create("`$_ | $($configuration.Function) -JojobaThrottle 0")
+            } else {
+                $jobArguments.ScriptBlock = [scriptblock]::Create("Set-StrictMode -Version Latest; `$ErrorActionPreference = `"Stop`"; `$_ | $($configuration.Function) -JojobaThrottle 0")
+            }
 
-            # Add any extra switches and parameters to the scriptblock so they can be passed to the caller.
-            # This can't handle complex objects - those should be piped in instead.
-            # Some exceptions for Jojoba flags are included.
+            # Add any extra switches and parameters to the scriptblock so they
+            # can be passed to the caller. This can't handle complex objects -
+            # those should be piped in instead.
             $PSCmdlet.GetVariableValue("MyInvocation").BoundParameters.GetEnumerator() | ForEach-Object {
-                # This is passed by the pipeline
-                if ($_.Key -ne $settings.InputName) {
-                    if ($_.Key -eq $settings.ArgumentName) {
+                # The main pipeline object is passed in via the pipeline
+                if ($_.Key -ne $configuration.InputName) {
+                    # Jojoba arguments are an array that needs an exclusion
+                    if ($_.Key -eq $configuration.ArgumentName) {
                         $_.Value | ForEach-Object {
                             if ($_ -eq "-JojobaThrottle") {
                                 $_ = "-JojobaThrottleOld"
@@ -144,11 +146,14 @@ function Start-Jojoba {
             }
 
             Write-Verbose "Scheduling $($jobArguments.Name) batch $($jobArguments.Batch) throttle $($jobArguments.Throttle) modules $($jobArguments.ModulesToImport) functions $($jobArguments.FunctionsToLoad) script $($jobArguments.ScriptBlock)"
-            # Here we can continue to pipe in a complex object, or, revert back to the InputObject, for simplicity
+            # If the function was called with a pipeline (it should have been)
+            # then pass that on in the pipeline.
+            # Otherwise pass the variable in over the pipeline anyway, as it's
+            # the same thing.
             $null = @(if ($PSCmdlet.GetVariableValue("_") -and $PSCmdlet.GetVariableValue("_") -isnot [string]) {
                     $PSCmdlet.GetVariableValue("_")
                 } else {
-                    $PSCmdlet.GetVariableValue($settings.InputName)
+                    $PSCmdlet.GetVariableValue($configuration.InputName)
                 }) | Start-RSJob @jobArguments
             #endregion
         }

@@ -1,13 +1,15 @@
 ﻿<#
 
 .SYNOPSIS
-Read out basic Jojoba results to a sound card.
+Speak Jojoba test results to a sound card.
 
 .DESCRIPTION
-Takes a Jojoba result and reads out each class, name, and result (and optional message). It will repeat failures twice.
+Speech includes the class name, name, and result. If the result is a failure
+the message will be repeated. If there is a message on a failure it will be
+spoken during the repeat.
 
 .PARAMETER Test
-A Jojoba test case.
+Output from a Jojoba function called with -JojobaPassThru.
 
 .PARAMETER VoiceGender
 Male or Female.
@@ -18,45 +20,45 @@ Rate of speech. 2 is a little faster than normal.
 .EXAMPLE
 function Test-DatabaseServer {
     param (
-        [Parameter(AcceptPipelineInput)]
-        $InputObject,
-        $JojobaThrottle = $env:NUMBER_OF_PROCESSORS
+        [Parameter(ValueFromPipeline)]
+        [Alias("InputObject")]
+        $ServerInstance,
+        [Parameter(ValueFromRemainingArguments)]
+        $Jojoba
     )
     begin {
     }
     process {
         Start-Jojoba {
-            switch ($InputObject) {
+            switch ($ServerInstance) {
                 "FRODO" {
+                    # Simulate it finishing last
+                    Start-Sleep -Seconds 5
                     break
                 }
                 "LARRY" {
                     Write-JojobaFail "Offline for maintenance"
                 }
                 "CURLY" {
-                    Write-JojobaFail "Is not even resolving an IP address, oh no!"
+                    Write-JojobaFail "Is not even resolving an IP address!"
                 }
             }
         }
     }
     end {
+        Publish-Jojoba
     }
 }
-"FRODO","LARRY","CURLY" | Test-DatabaseServer | Out-JojobaSpeech
+"FRODO","LARRY","CURLY" | Test-DatabaseServer -JojobaPassThru | Out-JojobaSpeech
 
-Fake a database failure and listen to the results.
-
-This is only an example. Do NOT write Jojoba code like this as it skips out on many Jojobs features. Specifically it does not have multi-threading (as it has no JojobaFail) and no Jenkins output.
-
-.NOTES
-
+Fake the failure of a database test and listen to the results.
 
 #>
 
 function Out-JojobaSpeech {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline=$true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         $Test,
         $VoiceGender = "Female",
         $VoiceRate = 2
@@ -64,7 +66,7 @@ function Out-JojobaSpeech {
 
     begin {
         try {
-             Add-Type -Assembly System.Speech
+            Add-Type -Assembly System.Speech
         } catch {
             Write-Error -Message "Speech requires NET 3.0 and above"
         }
@@ -74,19 +76,19 @@ function Out-JojobaSpeech {
         New-DisposableObject ($speech = New-Object System.Speech.Synthesis.SpeechSynthesizer) {
             $speech.SelectVoiceByHints($VoiceGender)
             $speech.Rate = $VoiceRate
-            
+
             # This isn't perfect, but, I want to remove - signs from the class name (as it's
             # often Test-Something, etc, and leaving it there results in speech oddities),
-            # but I also want to add spaces between ACRONYMS and WordsLikeThis and numbers 
+            # but I also want to add spaces between ACRONYMS and WordsLikeThis and numbers
             # as it sounds better for server names
             $regEx = '[^\p{Ll}\s]', ' $&'
             $speechString = "$($Test.ClassName.Replace("-", "`") -creplace $regEx, ' $&') on $($Test.Name -creplace $regEx, ' $&'), $($Test.Result)"
             $speech.Speak($speechString)
             if ($Test.Result -eq "Fail") {
                 if (!$Test.Message) {
-                    $speech.Speak("Repeat, $speechString with no reason")
+                    $speech.Speak("I repeat, $speechString with no message")
                 } else {
-                    $speech.Speak("Repeat, $speechString with reason $($Test.Message)")
+                    $speech.Speak("I repeat, $speechString with message $($Test.Message)")
                 }
             }
         }
@@ -95,4 +97,3 @@ function Out-JojobaSpeech {
     end {
     }
 }
-

@@ -155,6 +155,24 @@ Describe "jojoba" {
             $result.OtherProperty | Should -Be "Set"
         }
     }
+    Context "default and unsafe mode work as predicted" {
+        It "default ErrorActionPreference catches errors" {
+            $result = "ABC" | Test-ErrorActionPreference -JojobaQuiet -JojobaPassThru
+            $result.Result | Should -Be Fail
+        }
+        It "unsafe ErrorActionPreference ignores errors" {
+            $result = "ABC" | Test-ErrorActionPreference -JojobaQuiet -JojobaPassThru -JojobaUnsafe
+            $result.Result | Should -Be Pass
+        }
+        It "default StrictMode catches errors" {
+            $result = "ABC" | Test-StrictMode -JojobaQuiet -JojobaPassThru
+            $result.Result | Should -Be Fail
+        }
+        It "unsafe StrictMode ignores errors" {
+            $result = "ABC" | Test-StrictMode -JojobaQuiet -JojobaPassThru -JojobaUnsafe
+            $result.Result | Should -Be Pass
+        }
+    }
     Context "jenkins functionality works" {
         It "won't trigger under normal conditions" {
             "ABC", "CDE" | Test-Pass -JojobaQuiet

@@ -27,15 +27,18 @@ Pass on the incoming object to the output stream. This is not recommended becaus
     Data = New-Object Collections.ArrayList
 } | Write-JojobaXml
 
+.NOTES
+This is for internal use by Jojoba and should not be called externally.
+
 #>
 
 function Write-JojobaXml {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline=$true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         $Test,
         $OutputPath = ".\Jojoba.xml",
-        
+
         [switch] $PassThru
     )
 
@@ -102,7 +105,7 @@ function Write-JojobaXml {
 
             [void] $xmlDocument.ChildNodes.AppendChild($xmlSuite)
         }
-        
+
         if ($PassThru) {
             $Test
         }
@@ -112,4 +115,3 @@ function Write-JojobaXml {
         $xmlDocument.Save($OutputPath)
     }
 }
-
