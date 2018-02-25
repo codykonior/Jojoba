@@ -79,6 +79,48 @@ Describe "jojoba" {
             }
         }
     }
+    Context "non-Jojoba non-pipeline components are passed on" {
+        It "switch" {
+            $result = "ABC" | Test-Switch -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Switch False"
+            $result = "ABC" | Test-Switch -SomeSwitch:$false -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Switch False"
+            $result = "ABC" | Test-Switch -SomeSwitch -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Switch True"
+        }
+        It "bool" {
+            $result = "ABC" | Test-Bool -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Bool False"
+            $result = "ABC" | Test-Bool -SomeBool $false -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Bool False"
+            $result = "ABC" | Test-Bool -SomeBool $true -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Bool True"
+        }
+        It "ints" {
+            $result = "ABC" | Test-Int -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Int 0"
+            $result = "ABC" | Test-Int -SomeInt 1 -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Int 1"
+            $result = "ABC" | Test-Int -SomeInt 2 -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Int 2"
+        }
+        It "string" {
+            $result = "ABC" | Test-String -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "String "
+            $result = "ABC" | Test-String -SomeString "ABC" -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "String ABC"
+            $result = "ABC" | Test-String -SomeString 2 -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "String 2"
+        }
+        It "string-compatible arrays" {
+            $result = "ABC" | Test-Array -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Array "
+            $result = "ABC" | Test-Array -SomeArray "ABC", "BCD", "2" -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Array ABC BCD 2"
+            $result = "ABC" | Test-Array -SomeArray "ABC", "BCD", 2 -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "Array ABC BCD 2"
+        }
+    }
     Context "obscure portions should work" {
         It "-JojobaSuite override" {
             $result = "ABC" | Test-Pass -JojobaSuite "MySuite" -JojobaQuiet -JojobaPassThru

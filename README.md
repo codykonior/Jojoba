@@ -1,12 +1,10 @@
-![][1] 
+![][1]
 
 [![Build status](https://ci.appveyor.com/api/projects/status/oefdf90a75hqsk69?svg=true)](https://ci.appveyor.com/project/codykonior/jojoba)
 
 #### Description
 
-Provides a simple method of building parallel capability into PowerShell functions and wrapping results in a unit testing format.
-
-I use it for operational validation of large server environments because it makes it easy to write tests that can run quickly and be understood interactively and by Jenkins.
+Jojoba provides a simple template to follow for building parallel pipeline capability into functions and standardising their output for the purposes of operational validation and testing. It outputs data that can be interpreted by Jenkins.
 
 ___Please note: This version is in Alpha and documentation is still being updated.___
 
@@ -21,12 +19,12 @@ It is written for Windows PowerShell 5.1 and has also been tested on PowerShell 
 #### Example
 
 Any function using Jojoba needs a minimum of:
-* A string type ValueFromPipeline or ValueFromPipelineByPropertyName argument with a name or alias of InputObject.
-* A ValueFromRemainingArguments argument of any name. Any switches for Jojoba will use the -Jojoba prefix.
-* `Start-Jojoba {}` wrapping code in the process block.
+* A string type pipeline input with a name or alias of InputObject. _Don't use an array_.
+* A ValueFromRemainingArguments argument of any name. _Switches intended for Jojoba will use the -Jojoba prefix._
+* `Start-Jojoba {}` wrapping all code in the process block.
 * `Publish-Jojoba` in the end block.
 
-Any parameters not sent through the pipeline will be serialized to strings and so should be limited to simple types: ints, strings, bools, and switches.
+Any parameters not sent through the pipeline will be serialized to strings and so should be limited to simple types: ints, strings, string arrays, bools, and switches.
 
 ``` powershell
 function Test-ComputerPing {

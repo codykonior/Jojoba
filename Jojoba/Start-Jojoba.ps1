@@ -55,7 +55,6 @@ function Start-Jojoba {
                 Message         = New-Object Collections.ArrayList
                 Data            = New-Object Collections.ArrayList
                 CriticalFailure = $false
-                Other           = $($settings | Format-List | Out-String)
             }
 
             $jojobaMessages = try {
@@ -132,8 +131,12 @@ function Start-Jojoba {
                         }
                     } elseif ($_.Value -is [System.Management.Automation.SwitchParameter]) {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key):`$$($_.Value)")
+                    } elseif ($_.Value -is [bool]) {
+                        $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key) `$$($_.Value)")
                     } elseif ($_.Value -is [string]) {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key) '$($_.Value.Replace("'", "''"))'")
+                    } elseif ($_.Value -is [array]) {
+                        $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key) $(($_.Value | ForEach-Object { "'$($_.ToString().Replace("'", "''"))'" }) -join ",")")
                     } else {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key) $($_.Value)")
                     }
