@@ -21,9 +21,9 @@ function Get-JojobaArgument {
     }
 
     process {
-        $callerModuleName = $Caller.GetVariableValue("MyInvocation").MyCommand.ModuleName
-        $callerClassName = $Caller.GetVariableValue("MyInvocation").MyCommand.Name
-        if ($callerClassName) {
+        $callerModule = $Caller.GetVariableValue("MyInvocation").MyCommand.ModuleName
+        $callerFunction = $Caller.GetVariableValue("MyInvocation").MyCommand.Name
+        if ($callerFunction) {
             $callerCommand = $Caller.GetVariableValue("MyInvocation").MyCommand
             if (!$callerCommand) {
                 Write-Error "No caller command"
@@ -74,19 +74,21 @@ function Get-JojobaArgument {
 
         $settings = @{
             # Internal use
+            Module       = $callerModule
+            Function     = $callerFunction
             ArgumentName = $argumentName
-            InputName = $inputName
+            InputName    = $inputName
 
             # Automatic populations
-            Suite = $callerModuleName
-            ClassName = $callerClassName
-            Name = $Caller.GetVariableValue($inputName)
+            Suite        = $callerModule
+            ClassName    = $callerFunction
+            Name         = $Caller.GetVariableValue($inputName)
 
             # Manual switches
-            Quiet = $false
-            PassThru = $false
-            Throttle = $env:NUMBER_OF_PROCESSORS
-            Jenkins = if ($env:JENKINS_SERVER_COOKIE) {
+            Quiet        = $false
+            PassThru     = $false
+            Throttle     = $env:NUMBER_OF_PROCESSORS
+            Jenkins      = if ($env:JENKINS_SERVER_COOKIE) {
                 ".\Jojoba.xml"
             } else {
                 $false

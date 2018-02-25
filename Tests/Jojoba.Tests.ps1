@@ -79,6 +79,23 @@ Describe "jojoba" {
             }
         }
     }
+    Context "obscure portions should work" {
+        It "-JojobaSuite override" {
+            $result = "ABC" | Test-Pass -JojobaSuite "MySuite" -JojobaQuiet -JojobaPassThru
+            $result.Suite | Should -Be MySuite
+        }
+        It "-JojobaClassName override" {
+            $result = "ABC" | Test-Pass -JojobaClassName "MyClass" -JojobaQuiet -JojobaPassThru
+            $result.ClassName | Should -Be MyClass
+        }
+        It "Write-JojobaFail -CriticalFailure" {
+            { $result = "ABC" | Test-CriticalFailure -JojobaQuiet -JojobaPassThru } | Should -Throw
+        }
+        It "Write-JojobaProperty" {
+            $result = "ABC" | Test-Property -JojobaQuiet -JojobaPassThru
+            $result.OtherProperty | Should -Be "Set"
+        }
+    }
     Context "jenkins functionality works" {
         It "won't trigger under normal conditions" {
             "ABC", "CDE" | Test-Pass -JojobaQuiet
@@ -129,4 +146,3 @@ Describe "jojoba" {
 
     Pop-Location
 }
-

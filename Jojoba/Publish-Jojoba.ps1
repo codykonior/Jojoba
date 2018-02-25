@@ -24,8 +24,8 @@ Passthru
 
 function Publish-Jojoba {
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "global:LASTEXITCODE", Justification="Required for Jenkins")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "failed", Justification="Bug in Analyzer")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "global:LASTEXITCODE", Justification = "Required for Jenkins")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "failed", Justification = "Bug in Analyzer")]
     param (
     )
 
@@ -44,11 +44,12 @@ function Publish-Jojoba {
             # and encapsulated as part of a test result. But in case they don't, then we
             # deal with them separately.
             Get-RSJob -Batch $settings.Batch | Wait-RSJob -ShowProgress | ForEach-Object {
-                if ($_.State -eq "Failed" -or $_.HasErrors) {
+                $jobResult = Receive-RSJob $_
+
+                if ($_.State -eq "Failed" -or $_.HasErrors -or ($jobResult -and $jobResult.psobject.Properties["CriticalFailure"] -and $jobResult.CriticalFailure)) {
                     $failed = $true
                 }
 
-                $jobResult = Receive-RSJob $_
                 [void] $jobs.Add($jobResult)
                 [void] $newJobs.Add($jobResult)
 
@@ -81,15 +82,15 @@ function Publish-Jojoba {
     }
 
     end {
-        if ($settings.Jenkins) {
-            if ($jobs) {
-                Write-JojobaXml $jobs -OutputPath $settings.Jenkins
-            }
-            if ($failed) {
-                $global:LASTEXITCODE = 1
-            } else {
-                $global:LASTEXITCODE = 0
-            }
+        if ($settings.Jenkins -and $jobs) {
+            Write-JojobaXml $jobs -OutputPath $settings.Jenkins
+        }
+
+        if ($failed) {
+            $global:LASTEXITCODE = 1
+            Write-Error "One or more tasks indicated a Critical Failure"
+        } else {
+            $global:LASTEXITCODE = 0
         }
     }
 }

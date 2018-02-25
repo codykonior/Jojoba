@@ -11,11 +11,11 @@ The test to carry out. It must use $InputObject or $_.
 
 .INPUTS
 All inputs aside from the ScriptBlock are taken from the calling function.
-    $argument.Batch
-    $argument.Callback (optional, for writing events elsewhere)
-    $argument.Jenkins (optional, for forcing a write of XML)
-    $argument.Throttle (required for batch runs, optional for testing)
-    $argument.Suite (optional)
+    $settings.Batch
+    $settings.Callback (optional, for writing events elsewhere)
+    $settings.Jenkins (optional, for forcing a write of XML)
+    $settings.Throttle (required for batch runs, optional for testing)
+    $settings.Suite (optional)
 
 .OUTPUTS
 A test case object.
@@ -37,26 +37,25 @@ function Start-Jojoba {
     }
 
     process {
-        $argument = Get-JojobaArgument $PSCmdlet
+        $settings = Get-JojobaArgument $PSCmdlet
 
-        if (!$argument.Throttle -or !$argument.ClassName) {
+        if (!$settings.Throttle) {
             #region Direct run
-            Write-Verbose "Starting inside thread for $($argument.Name)"
+            Write-Verbose "Starting inside thread for $($settings.Name)"
 
             # Fill out the base test case, named after parts of the original caller
             $jojobaTestCase = [PSCustomObject] @{
-                UserName  = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-                Suite     = $argument.Suite
-                Timestamp = Get-Date
-                Time      = 0
-                ClassName = $argument.ClassName
-                Name      = $argument.Name
-                Result    = "Pass"
-                Message   = New-Object Collections.ArrayList
-                Data      = New-Object Collections.ArrayList
-            }
-            $jojobaAbort = [PSCustomObject] @{
-                Message = New-Object Collections.ArrayList
+                UserName        = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+                Suite           = $settings.Suite
+                Timestamp       = Get-Date
+                Time            = 0
+                ClassName       = $settings.ClassName
+                Name            = $settings.Name
+                Result          = "Pass"
+                Message         = New-Object Collections.ArrayList
+                Data            = New-Object Collections.ArrayList
+                CriticalFailure = $false
+                Other           = $($settings | Format-List | Out-String)
             }
 
             $jojobaMessages = try {
@@ -65,6 +64,7 @@ function Start-Jojoba {
                 # Handle an uncaught stop as a test block failure. This saves
                 # having to write test code for everything if the exception is
                 # self explanatory
+                # This isn't a Critical Failure though.
                 Write-JojobaFail $_.ToString()
             }
 
@@ -98,26 +98,22 @@ function Start-Jojoba {
             $jojobaTestCase.Message = $jojobaTestCase.Message -join [Environment]::NewLine
             $jojobaTestCase.Data = $jojobaTestCase.Data -join [Environment]::NewLine
 
-            if (!$jojobaAbort.Message) {
-                $jojobaTestCase
-            } else {
-                Write-Error ($jojobaAbort.Message -join [Environment]::NewLine)
-            }
+            $jojobaTestCase
             #endregion
         } else {
             #region Parallel run
             # These are arguments which will be splatted for use by PoshRSJob
             $jobArguments = @{
-                Name            = $argument.ClassName
-                Throttle        = $argument.Throttle
-                Batch           = $argument.Batch
-                ModulesToImport = $argument.Suite
-                FunctionsToLoad = if (!$argument.Suite) {
-                    $argument.ClassName
+                Name            = $settings.Function
+                Throttle        = $settings.Throttle
+                Batch           = $settings.Batch
+                ModulesToImport = $settings.Suite
+                FunctionsToLoad = if (!$settings.Module) {
+                    $settings.Function
                 } else {
                     $null
                 }
-                ScriptBlock     = [scriptblock]::Create("`$_ | $($argument.ClassName) -JojobaThrottle 0")
+                ScriptBlock     = [scriptblock]::Create("`$_ | $($settings.Function) -JojobaThrottle 0")
                 Verbose         = $VerbosePreference
             }
 
@@ -125,8 +121,16 @@ function Start-Jojoba {
             # This can't handle complex objects - those should be piped in instead.
             # Some exceptions for Jojoba flags are included.
             $PSCmdlet.GetVariableValue("MyInvocation").BoundParameters.GetEnumerator() | ForEach-Object {
-                if ($_.Key -ne $argument.InputName -and $_.Key -ne $argument.ArgumentName) {
-                    if ($_.Value -is [System.Management.Automation.SwitchParameter]) {
+                # This is passed by the pipeline
+                if ($_.Key -ne $settings.InputName) {
+                    if ($_.Key -eq $settings.ArgumentName) {
+                        $_.Value | ForEach-Object {
+                            if ($_ -eq "-JojobaThrottle") {
+                                $_ = "-JojobaThrottleOld"
+                            }
+                            $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) $_")
+                        }
+                    } elseif ($_.Value -is [System.Management.Automation.SwitchParameter]) {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key):`$$($_.Value)")
                     } elseif ($_.Value -is [string]) {
                         $jobArguments.ScriptBlock = [scriptblock]::Create("$($jobArguments.ScriptBlock) -$($_.Key) '$($_.Value.Replace("'", "''"))'")
@@ -135,12 +139,13 @@ function Start-Jojoba {
                     }
                 }
             }
+
             Write-Verbose "Scheduling $($jobArguments.Name) batch $($jobArguments.Batch) throttle $($jobArguments.Throttle) modules $($jobArguments.ModulesToImport) functions $($jobArguments.FunctionsToLoad) script $($jobArguments.ScriptBlock)"
             # Here we can continue to pipe in a complex object, or, revert back to the InputObject, for simplicity
             $null = @(if ($PSCmdlet.GetVariableValue("_") -and $PSCmdlet.GetVariableValue("_") -isnot [string]) {
                     $PSCmdlet.GetVariableValue("_")
                 } else {
-                    $PSCmdlet.GetVariableValue($argument.InputName)
+                    $PSCmdlet.GetVariableValue($settings.InputName)
                 }) | Start-RSJob @jobArguments
             #endregion
         }

@@ -71,7 +71,7 @@ function Test-ComputerPing {
 #### What else can I do?
 
 * `Write-JojobaSkip` will mark the output as skipped, for example if some pre-condition is not met.
-* `Write-JojobaAbort` will terminate the block with an error which will not be wrapped in the JUnit format. This is rarely needed and generally not a good idea.
+* `Write-JojobaFail -CriticalFailure` will flag the entire run as critically failed. This results in an $env:LASTEXITCODE of 1 and a Write-Error after all test results has been passed on. This is useful to indicate that a test didn't just fail, but requires investigation into the script logic.
 * `Write-JojobaProperty` upserts a hashtable property bag to the unit test. Unit test objects can be returned with -JojobaPassThru. These properties will not display on the screen or appear in the JUnit XML output however.
 
 #### What options are there?

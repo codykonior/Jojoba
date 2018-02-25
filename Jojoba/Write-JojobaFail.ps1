@@ -24,7 +24,9 @@ function Write-JojobaFail {
     param (
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string] $Message
+        [string] $Message,
+
+        [switch] $CriticalFailure
     )
 
     begin {
@@ -32,6 +34,9 @@ function Write-JojobaFail {
 
     process {
         [void] $jojobaTestCase.Message.Add($Message)
+        if ($CriticalFailure) {
+            $jojobaTestCase.CriticalFailure = $true
+        }
 
         $jojobaTestCase.Result = "Fail"
     }
