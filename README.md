@@ -14,7 +14,7 @@ Why does it exist? Because:
 
 Jojoba does away with all of this so you don't need to think about it or maintain it yourself anymore. Back-end job functionality is provided by the world-class [PoshRSJob][4] runspace management module.
 
-___Please note: There are [breaking changes](#need-more) from previous versions of Jojoba.___
+___Please note: There are [breaking changes](#need-more) in Jojoba 4 from previous versions of Jojoba.___
 
 #### Download and install Jojoba using PowerShell:
 
@@ -22,7 +22,7 @@ ___Please note: There are [breaking changes](#need-more) from previous versions 
 Install-Module -Name Jojoba
 ```
 
-It is written for Windows PowerShell 5.1 and has also been tested on PowerShell Core 6.0.1 for Windows.
+It is written for Windows PowerShell 5.1 and has also been tested on PowerShell Core 6.0.1 for Windows. PowerShell 5.1 introduces a lot of performance fixes for the pipeline and is required to use modern tags in the PowerShell Gallery.
 
 #### Example
 
@@ -74,7 +74,7 @@ function Test-ComputerPing {
 #### What really happens?
 
 * When the pipeline starts a new runspace is created with one slot per CPU core.
-* Any pipelined input will be queued into those slots as they become available.
+* Any pipelined input will be queued and fed into those slots as they become available.
 * The results are output to the host in a unit test format with distinct colouring.
   * Suite = Module
   * Class = Function
@@ -87,13 +87,12 @@ function Test-ComputerPing {
 
 * `Write-JojobaSkip` will mark the output as skipped, for example if some pre-condition is not met.
 * `Write-JojobaFail -CriticalFailure` will flag the entire run as critically failed. This results in $global:LASTEXITCODE of 1 and a Write-Error after all test results has been passed on. This is useful to indicate that a test didn't just fail, but requires investigation into the script logic.
-* `Write-JojobaProperty` takes a hashtable of properties and will upsert them to the unit test object, which can be returned with -JojobaPassThru. They won't appear on screen or in any JUnit XML output however.
-
-Pester `| Should` test statements can also be used to fail a test, as these will throw a terminating exception which will be caught by Jojoba as a failure.
+* `Write-JojobaProperty` takes a hash table of properties and will upsert them to the unit test object, which can be returned with -JojobaPassThru. They won't appear on screen or in any JUnit XML output however.
+* Pester `| Should` assertions work and can be used because they throw terminating exceptions which are flagged by Jojoba as a failure. However you should not wrap them in Pester `Describe` or `Context` blocks as those catch the exception first.
 
 #### What options are there?
 
-Parameters are passed to your function through the RemainingArguments variable not to Jojoba directly.
+Jojoba doesn't take parameters directly, instead parameters are passed to your function and intercepted through parameter selected to hold RemainingArguments.
 
 Common:
 
@@ -103,22 +102,13 @@ Common:
 
 Uncommon:
 
-* `-JojobaUnsafe` will skip setting $ErrorActionPreference to Stop and StrictMode to Latest before your scriptblock executes. This is done because jobs don't inherit these settings by default and they guarantee results.
+* `-JojobaUnsafe` will skip setting $ErrorActionPreference to Stop and StrictMode to Latest before your scriptblock executes. This is done because jobs don't inherit these settings by default, and using them guarantees results.
 * `-JojobaSuite` and `-JojobaClassName` can be used to override these properties in the output, though `Write-JojobaProperty` can do the same while inside `Start-RSJob`.
 * `-JojobaBatch` can be used to share a runspace pool between multiple function calls, otherwise a new one is used each time.
 * `-JojobaThrottle` accepts an integer to determine how many jobs will be spun up. It defaults to match the number of CPU cores. If  it's set to 0 all job functionality is disabled so you can set breakpoints and debug your function easily.
 
 #### What are some of the gotchas?
 
-* A PoshRSJob is a lot like a normal job:
-  * It doesn't load the $profile.
-  * It begins with an $ErrorActionPreference of Continue.
-  * StrictMode is disabled.
-
-  Executing a function from the command line would usually inherit those properties but functions which are farmed out to jobs do not. So if you care about these settings (and you should because it's best practice to have these set to Stop and Latest respectively), you should:
-
-  * For standalone functions, declare them within the Start-Jojoba block.
-  * Or for modules, declare them in your .psm1 file. They sets them for the entire scope of all module functions, even those executed within jobs.
 * If your functions loads modules that have a TypesToProcess section then PowerShell can throw spurious errors trying to load those modules while under heavy runspace load due to PowerShell engine internal race conditions. The only solution is to remove it from the module definition file and add `Update-TypeData -PrependPath` lines to the RootModule file instead. Common modules susceptible to this include: FailoverClusters, DnsClient, and SqlServer.
 * PowerShell Core 6.0.1 crashes at the end of the AppVeyor tests with a timeout problem so those tests have been temporarily disabled. I am not able to reproduce it locally.
 
@@ -126,13 +116,13 @@ Uncommon:
 
 [Watch the hour long video][3].
 
-There have been some changes in templates since the version of Jojoba presented there:
+In Jojoba 4 there have been some changes in the templates demonstrated in that video.
 
 * `$InputObject` can now be a parameter alias rather than being forced as the parameter name.
 * `$JojobaBatch` and `$JojobaThrottle` should not be hardcoded into your function definition. A ValueFromRemainingArguments parameter is required instead.
 * Jojoba output is done through Write-Host rather than returning objects. If you need the object then you can use `-JojobaPassThru`. If you don't want to see the Write-Host output use `-JojobaQuiet`.
 
-Also not presented in the video:
+Also these are other changes in Jojoba 4 not presented in that video:
 
 * `Write-JojobaAbort` is no longer supported. Use `Write-JojobaFail -CriticalFailure` instead. The output is slightly different.
 * `$JojobaCallback` is no longer supported. Use `-JojobaPassthru` instead to pipe the test object somewhere.
