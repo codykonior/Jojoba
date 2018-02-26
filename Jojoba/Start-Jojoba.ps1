@@ -83,7 +83,8 @@ function Start-Jojoba {
                     [void] $jojobaTestCase.Data.Add($jojobaMessage)
                 } else {
                     # Expand complex objects
-                    [void] $jojobaTestCase.Data.Add(($jojobaMessage | Format-List | Out-String))
+                    [void] $jojobaTestCase.Data.Add(($jojobaMessage | Format-List | Out-String | ForEach-Object {
+                      $_ -replace "(?m)\A\s+", "" -replace "(?m)^\s(\s+)\Z", "" }))
                 }
             }
 

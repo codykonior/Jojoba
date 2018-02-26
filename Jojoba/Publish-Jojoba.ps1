@@ -47,7 +47,9 @@ function Publish-Jojoba {
 
                 # Write out all the good test information
                 if (!$configuration.Quiet) {
-                    $jobResult | Select-Object UserName, Suite, Timestamp, Time, ClassName, Name, Result, Message, Data | Format-List | Out-String -Stream -PipelineVariable line | ForEach-Object {
+                    $jobResult | Select-Object UserName, Suite, Timestamp, Time, ClassName, Name, Result, Message, Data | Format-List | Out-String | ForEach-Object -PipelineVariable line {
+                        $_ -replace "(?m)\A\s+", "" -replace "(?m)^\s(\s+)\Z", "" -split [Environment]::NewLine
+                    } | ForEach-Object {
                         if ($line -match "^(Name.*?:)(.*)`$") {
                             Write-Host $Matches[1] -NoNewline -ForegroundColor DarkGray
                             Write-Host $Matches[2] -ForegroundColor White
@@ -61,6 +63,7 @@ function Publish-Jojoba {
                             Write-Host $line -ForegroundColor DarkGray
                         }
                     }
+                #>
                 }
 
                 if ($configuration.PassThru) {
