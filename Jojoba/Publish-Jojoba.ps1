@@ -20,6 +20,8 @@ function Publish-Jojoba {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "global:LASTEXITCODE", Justification = "Required for Jenkins")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "failed", Justification = "Bug in Analyzer")]
     param (
+        [Parameter(ValueFromRemainingArguments)]
+        $Jojoba
     )
 
     begin {
@@ -63,6 +65,14 @@ function Publish-Jojoba {
 
                 if ($configuration.PassThru) {
                     $jobResult
+                }
+
+                if ($configuration.Callback) {
+                    try {
+                        &($configuration.CallBack) $jobResult
+                    } catch {
+                        Write-Warning "Jojoba - Callback to $($configuration.Callback) failed: $_"
+                    }
                 }
             }
         }

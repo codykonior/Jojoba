@@ -67,10 +67,9 @@ function Get-JojobaConfiguration {
                 Write-Error "Jojoba requires a parameter variable aliased to InputObject"
             }
 
-            # Maybe no -Jojoba arguments were specified, and that's okay!
-            if (!($arguments = $Caller.GetVariableValue($argumentName))) {
-                $arguments = @()
-            }
+            # Load the remaining arguments variable contents, it may be an empty
+            # array
+            $arguments = $Caller.GetVariableValue($argumentName)
         } else {
             Write-Error "Jojoba can only be used from within functions"
         }
@@ -85,8 +84,8 @@ function Get-JojobaConfiguration {
             # Internal use
             Module       = $callerModule
             Function     = $callerFunction
-            ArgumentName = $argumentName
             InputName    = $inputName
+            ArgumentName = $argumentName
             Unsafe       = $false
 
             # Automatic populations
@@ -103,14 +102,23 @@ function Get-JojobaConfiguration {
             } else {
                 $false
             }
+            Callback     = $null
         }
 
-        for ($i = 0; $arguments -and $i -lt $arguments.Count; $i++) {
-            if ($arguments[$i] -and $arguments[$i] -match '^-Jojoba(.*?)(?::?)$') {
-                if (($i + 1) -eq $arguments.Count -or $arguments[$i + 1] -like "-*") {
-                    $settings[$Matches[1]] = $true
-                } else {
-                    $settings[$Matches[1]] = $arguments[++$i]
+        <#
+        1.  On the first run, any parameters that were passed directly to
+            Start-Jojoba and Publish-Jojoba are populated.
+        2.  On the second run any parameters passed to the function itself
+            will override anything else.
+        #>
+        foreach ($parameterList in @($PSCmdlet.GetVariableValue("Jojoba"), $arguments)) {
+            for ($i = 0; $parameterList -and $i -lt $parameterList.Count; $i++) {
+                if ($parameterList[$i] -and $parameterList[$i] -match '^-Jojoba(.*?)(?::?)$') {
+                    if (($i + 1) -eq $parameterList.Count -or $parameterList[$i + 1] -like "-*") {
+                        $settings[$Matches[1]] = $true
+                    } else {
+                        $settings[$Matches[1]] = $parameterList[++$i]
+                    }
                 }
             }
         }

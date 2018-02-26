@@ -41,10 +41,8 @@ function Test-ComputerPing {
         [Parameter(Mandatory, ValueFromPipeline)]
         [Alias("InputObject")]
         [string] $ComputerName,
-
         #region Your other arguments
         #endregion
-
         [Parameter(ValueFromRemainingArguments)]
         $Jojoba
     )
@@ -54,8 +52,8 @@ function Test-ComputerPing {
     process {
         Start-Jojoba {
             #region Your code
-            ping $ComputerName -n 1
-            if (!$?) {
+            & ping $ComputerName -n 1
+            if ($LASTEXITCODE -ne 0) {
                 Write-JojobaFail "Connection failed"
             }
             #endregion
@@ -98,14 +96,77 @@ Common:
 
 * `-JojobaQuiet` will suppress the Write-Host output.
 * `-JojobaPassThru` will return the unit test results as standard objects.
-* `-JojobaJenkins .\Jojoba.xml` will write the JUnit XML results to the specified file. This isn't necessary if you are running under Jenkins as it will be detected and written to that location automatically.
+* `-JojobaThrottle` accepts an integer to determine how many jobs will be spun up. It defaults to match the number of CPU cores. If  it's set to 0 all job functionality is disabled so you can set breakpoints and debug your function easily.
 
 Uncommon:
 
-* `-JojobaUnsafe` will skip setting $ErrorActionPreference to Stop and StrictMode to Latest before your scriptblock executes. This is done because jobs don't inherit these settings by default, and using them guarantees results.
 * `-JojobaSuite` and `-JojobaClassName` can be used to override these properties in the output, though `Write-JojobaProperty` can do the same while inside `Start-RSJob`.
+* `-JojobaJenkins .\Jojoba.xml` will write the JUnit XML results to the specified file. This isn't necessary if you are running under Jenkins as it will be detected and written to that location automatically.
+* `-JojobaUnsafe` will skip setting $ErrorActionPreference to Stop and StrictMode to Latest before your scriptblock executes. This is done because jobs don't inherit these settings by default, and using them guarantees results.
 * `-JojobaBatch` can be used to share a runspace pool between multiple function calls, otherwise a new one is used each time.
-* `-JojobaThrottle` accepts an integer to determine how many jobs will be spun up. It defaults to match the number of CPU cores. If  it's set to 0 all job functionality is disabled so you can set breakpoints and debug your function easily.
+* `-JojobaCallback` see [advanced usage](#advanced-usage)
+
+#### Advanced usage
+
+Let's say you have a lot of tests and you want to store the results of every test in a repository (like a database). You could do it like this:
+
+``` powershell
+<inputs> | <function that uses Jojoba> -JojobaPassThru | <function that writes the object to a database>
+```
+
+There is another way which is to use parameter `-JojobaCallback` which takes a function name which is passed a single test case object at a time just as if it had been given a -JojobaPassThru. You can use it like this:
+
+``` powershell
+<inputs> | <function that uses Jojoba> -JojobaPassThru -JojobaCallback <function that writes the object to a database>
+```
+
+Or better like this because it guarantees output rather than users remembering to do it:
+
+``` powershell
+function <function that uses Jojoba> {
+    ...
+    end {
+        Publish-Jojoba -JojobaCallback <function that writes the object to a database>
+    }
+}
+```
+
+Another way to use it is by defining `PSDefaultParameterValues` in the .psm1 of your module that defines all of your test functions.
+
+``` powershell
+# In your module's .psm1
+$PSDefaultParameterValues."Publish-Jojoba:JojobaCallback" = "Write-Callback"
+# From the command line
+<inputs> | <function that uses Jojoba>
+```
+
+The callback function should look like below, though the specific function name and parameter names are irrelevant:
+
+``` powershell
+function Write-Callback {
+    [CmdletBinding()]
+    param(
+        [Parameter(ValueFromPipeline)]
+        $TestCase
+    )
+
+    begin {
+    }
+    process {
+        # Do something with $TestCase
+    }
+    end {
+    }
+}
+```
+
+There are a few other important things to remember with this functionality:
+
+* `$PSDefaultParameterValues` takes effect from the scope in which it is defined, and modules have their own scope which is often different to the global scope. If it's not being triggered when you think it should be, make sure it's accessible from the scope you think it is.
+* The function name you provide must be accessible from the Jojoba module scope as well. If you are running a function defined in your session (rather than a module) then a normal function will do. If you are running a test stored in a module you should also define your callback function in that module. Otherwise (and the way it is done in the Pester tests) is to use a global function.
+* Errors in the callback function will be caught and returned with Write-Warning. This is to prevent them from interfering with the Jojoba pipeline.
+
+That's why it's an advanced feature. You may have to try it and work out how to get it going the first time depending on your use case.
 
 #### What are some of the gotchas?
 
@@ -125,7 +186,6 @@ In Jojoba 4 there have been some changes in the templates demonstrated in that v
 Also these are other changes in Jojoba 4 not presented in that video:
 
 * `Write-JojobaAbort` is no longer supported. Use `Write-JojobaFail -CriticalFailure` instead. The output is slightly different.
-* `$JojobaCallback` is no longer supported. Use `-JojobaPassthru` instead to pipe the test object somewhere.
 
 [1]: Images/Jojoba.png
 [2]: Images/Test-ComputerPing.gif

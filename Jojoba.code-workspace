@@ -9,6 +9,12 @@
 		"editor.formatOnPaste": false,
 		"editor.formatOnSave": true,
 		"editor.formatOnType": false,
-		"powershell.codeFormatting.preset": "OTBS"
+		"powershell.codeFormatting.preset": "OTBS",
+		"files.trimTrailingWhitespace": true,
+		"files.trimFinalNewlines": true,
+		"editor.rulers": [
+			80,
+			132
+		]
 	}
 }

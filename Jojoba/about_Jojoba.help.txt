@@ -81,6 +81,7 @@ EXAMPLE
 		}
 	}
 
-
 LINKS
-    https://github.com/codykonior/Jojoba
+	For complete usage information check the README:
+
+    https://github.com/codykonior/Jojoba/blob/master/README.md

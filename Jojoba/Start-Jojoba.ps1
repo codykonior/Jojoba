@@ -22,9 +22,9 @@ A test case object.
 function Start-Jojoba {
     [CmdletBinding(SupportsShouldProcess)]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [ScriptBlock] $ScriptBlock,
+        [scriptblock] $ScriptBlock,
 
         [Parameter(ValueFromRemainingArguments)]
         $Jojoba
@@ -121,9 +121,12 @@ function Start-Jojoba {
             # can be passed to the caller. This can't handle complex objects -
             # those should be piped in instead.
             $PSCmdlet.GetVariableValue("MyInvocation").BoundParameters.GetEnumerator() | ForEach-Object {
-                # The main pipeline object is passed in via the pipeline
+                # The main pipeline object is skipped here because it is passed
+                # in via the pipeline
                 if ($_.Key -ne $configuration.InputName) {
-                    # Jojoba arguments are an array that needs an exclusion
+                    # Jojoba arguments are an array that is copied as-is, except
+                    # for JojobaThrottle, as this is called with a 0 to run the
+                    # actual code once it has been boxed into jobs
                     if ($_.Key -eq $configuration.ArgumentName) {
                         $_.Value | ForEach-Object {
                             if ($_ -eq "-JojobaThrottle") {

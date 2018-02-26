@@ -1,4 +1,4 @@
-Describe "jojoba" {
+Describe "Jojoba" {
     Import-Module Jojoba -Force
     Import-Module PoshRSJob -Force
     Get-ChildItem $PSScriptRoot Test-*.ps1 | ForEach-Object {
@@ -10,7 +10,6 @@ Describe "jojoba" {
     BeforeEach {
         $env:JENKINS_SERVER_COOKIE = $null
         Set-Location $TestDrive
-
         if (Test-Path .\Jojoba.xml) {
             Remove-Item .\Jojoba.xml
         }
@@ -193,6 +192,29 @@ Describe "jojoba" {
                 Remove-Item .\Jojoba.xml
             }
             $env:JENKINS_SERVER_COOKIE = $null
+        }
+    }
+    Context "callbacks are done one per test case" {
+        # Mocks aren't appropriate here because the function doesn't already exist
+        It "when passed from the command line" {
+            function global:Write-Callback { param ([Parameter(ValueFromPipeline)] $Test) $Test }
+            $result = "ABC", "BCD" | Test-Pass -JojobaQuiet -JojobaCallback "Write-Callback"
+            $result.Count | Should -Be 2
+        }
+        It "should give a warning when the callback doesn't exist on the command line" {
+            $result = "ABC", "BCD" | Test-Pass -JojobaQuiet -JojobaCallback "Write-NonExistentCallback" 3>&1
+            $result | Should -Match "Callback.*failed"
+        }
+        It "when passed from within a function" {
+            function global:Write-Callback { param ([Parameter(ValueFromPipeline)] $Test) $Test }
+            $result = "ABC", "BCD" | Test-Callback -JojobaQuiet
+            $result.Count | Should -Be 2
+        }
+        It "when passed from within a function and also overridden on the command line" {
+            function global:Write-Callback { param ([Parameter(ValueFromPipeline)] $Test) Write-Error "Wrong one called" }
+            function global:Write-CallbackOverride { param ([Parameter(ValueFromPipeline)] $Test) $Test }
+            $result = "ABC", "BCD" | Test-Callback -JojobaQuiet -JojobaCallback "Write-CallbackOverride"
+            $result.Count | Should -Be 2
         }
     }
 
