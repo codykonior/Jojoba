@@ -193,4 +193,4 @@ Also these are other changes in Jojoba 4 not presented in that video:
 [2]: Images/Test-ComputerPing.gif
 [3]: https://www.youtube.com/watch?v=Ov-1n7H-tdQ
 [4]: https://github.com/proxb/PoshRSJob
-[5]: CHANGLOG.md
+[5]: CHANGELOG.md
