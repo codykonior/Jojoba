@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.3] - 2018-02-28
+### Changed
+- Order of test case properties changed for better readability.
+- Test case properties Message and Data may now be $null instead of empty
+strings. This helps when writing it to a database.
+
 ## [4.0.2] - 2018-02-27
 ### Fixed
 - Removed blank lines from the top and bottom of test results for readability.

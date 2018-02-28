@@ -2,7 +2,7 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/oefdf90a75hqsk69?svg=true)](https://ci.appveyor.com/project/codykonior/jojoba)
 
-[CHANGELOG][5]
+Read the [CHANGELOG][5]
 
 #### Description
 
@@ -179,7 +179,9 @@ That's why it's an advanced feature. You may have to try it and work out how to 
 
 [Watch the hour long video][3].
 
-In Jojoba 4 there have been some changes in the template compared to what was demonstrated in the video.
+Templates have changed from what was demonstrated in that video to now. You
+must use the template format in this [README][6] instead. You can also read the
+[CHANGELOG][5].
 
 * `$InputObject` can now be a parameter alias rather than being forced as the parameter name.
 * `$JojobaBatch` and `$JojobaThrottle` should not be hardcoded into your function definition. A ValueFromRemainingArguments parameter is required instead.
@@ -194,3 +196,4 @@ Also these are other changes in Jojoba 4 not presented in that video:
 [3]: https://www.youtube.com/watch?v=Ov-1n7H-tdQ
 [4]: https://github.com/proxb/PoshRSJob
 [5]: CHANGELOG.md
+[6]: README.md

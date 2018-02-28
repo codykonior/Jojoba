@@ -4,6 +4,7 @@ function Test-Pass {
         [Parameter(Mandatory, ValueFromPipeline)]
         [Alias("InputObject")]
         $SomeParameter,
+
         [Parameter(ValueFromRemainingArguments)]
         $SomethingLeftover
     )

@@ -43,15 +43,16 @@ function Start-Jojoba {
             # Fill out the test case
             $jojobaTestCase = [PSCustomObject] @{
                 UserName        = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-                Suite           = $configuration.Suite
                 Timestamp       = Get-Date
                 Time            = 0
+                CriticalFailure = $false
+                #
+                Suite           = $configuration.Suite
                 ClassName       = $configuration.ClassName
                 Name            = $configuration.Name
                 Result          = "Pass"
                 Message         = New-Object Collections.ArrayList
                 Data            = New-Object Collections.ArrayList
-                CriticalFailure = $false
             }
 
             $jojobaMessages = try {
@@ -84,7 +85,7 @@ function Start-Jojoba {
                 } else {
                     # Expand complex objects
                     [void] $jojobaTestCase.Data.Add(($jojobaMessage | Format-List | Out-String | ForEach-Object {
-                      $_ -replace "(?m)\A\s+", "" -replace "(?m)^\s(\s+)\Z", "" }))
+                                $_ -replace "(?m)\A\s+", "" -replace "(?m)^\s(\s+)\Z", "" }))
                 }
             }
 
@@ -92,8 +93,8 @@ function Start-Jojoba {
             $jojobaTestCase.Time = ((Get-Date) - $jojobaTestCase.Timestamp).TotalSeconds
 
             # Write out the test case after getting rid of {} marks
-            $jojobaTestCase.Message = $jojobaTestCase.Message -join [Environment]::NewLine
-            $jojobaTestCase.Data = $jojobaTestCase.Data -join [Environment]::NewLine
+            $jojobaTestCase.Message = (($jojobaTestCase.Message -join [Environment]::NewLine), $null, 1 -ne "")[0]
+            $jojobaTestCase.Data = (($jojobaTestCase.Data -join [Environment]::NewLine), $null, 1 -ne "")[0]
 
             $jojobaTestCase
             #endregion
