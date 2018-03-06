@@ -151,7 +151,17 @@ Describe "Jojoba" {
         }
         It "Write-JojobaProperty" {
             $result = "ABC" | Test-Property -JojobaQuiet -JojobaPassThru
+            $result.Result | Should -Be "Pass"
             $result.OtherProperty | Should -Be "Set"
+        }
+        It "Write-JojobaProperty update" {
+            $result = "ABC" | Test-PropertyUpdate -JojobaQuiet -JojobaPassThru
+            $result.Result | Should -Be "Pass"
+            $result.OtherProperty | Should -Be "Update"
+        }
+        It "Skip should not override Fail" {
+            $result = "ABC" | Test-FailSkip -JojobaQuiet -JojobaPassThru
+            $result.Result | Should -Be "Fail"
         }
     }
     Context "default and unsafe mode work as predicted" {

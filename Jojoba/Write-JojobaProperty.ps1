@@ -33,7 +33,7 @@ function Write-JojobaProperty {
     process {
         foreach ($thisProperty in $Property.Keys) {
             if ($jojobaTestCase.psobject.Properties[$thisProperty]) {
-                $jojobaTestCase[$thisProperty] = $Property[$thisProperty]
+                $jojobaTestCase.$thisProperty = $Property[$thisProperty]
             } else {
                 $jojobaTestCase | Add-Member -MemberType NoteProperty -Name $thisProperty -Value $Property[$thisProperty]
             }

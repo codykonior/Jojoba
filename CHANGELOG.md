@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.4] - 2018-03-06
+### Fixed
+- Write-JojobaProperty would fail if called twice on the same property.
+- Write-JojobaSkip would skip a test even if it had already failed. Now a Skip
+  will always log its message but will not overwrite a previous Fail result.
+
 ## [4.0.3] - 2018-02-28
 ### Changed
 - Order of test case properties changed for better readability.

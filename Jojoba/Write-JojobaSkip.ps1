@@ -16,7 +16,7 @@ This will set a Jojoba test case result to "Skip" and popluates the skip reason 
 Server skipped because it is turned off
 
 .NOTES
-A test would normally be skipped if the test cannot or should not be run - for example if the test result would not be valid. 
+A test would normally be skipped if the test cannot or should not be run - for example if the test result would not be valid.
 
 It should only be used if the test result requires no further action. If action was required, this test should be marked as a fail.
 
@@ -35,7 +35,9 @@ function Write-JojobaSkip {
 
     process {
         [void] $jojobaTestCase.Message.Add($Message)
-        $jojobaTestCase.Result = "Skip"
+        if ($jojobaTestCase.Result -ne "Fail") {
+            $jojobaTestCase.Result = "Skip"
+        }
     }
 
     end {
