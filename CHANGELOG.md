@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.5] - 2018-03-07
+### Changed
+- Where objects are output into the Data section of a test, they are formatted
+  with Format-List and Out-String. Now Out-String is limited to a width of
+  up to 12 characters less than the terminal width, so when it is displayed
+  on screen inside the test case (which is also formatted with Format-List)
+  it will wrap correctly. If there's no known terminal width then nothing
+  changes.
+
 ## [4.0.4] - 2018-03-06
 ### Fixed
 - Write-JojobaProperty would fail if called twice on the same property.

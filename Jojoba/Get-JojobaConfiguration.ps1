@@ -87,7 +87,11 @@ function Get-JojobaConfiguration {
             InputName    = $inputName
             ArgumentName = $argumentName
             Unsafe       = $false
-
+            OutString    = if ($host.UI.RawUI.WindowSize) {
+                @{ Width = $host.UI.RawUI.WindowSize.Width - 12 }
+            } else {
+                @{ }
+            }
             # Automatic populations
             Suite        = $callerModule
             ClassName    = $callerFunction
