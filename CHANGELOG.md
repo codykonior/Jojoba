@@ -14,23 +14,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [4.0.6] - 2018-03-11
 ### Changed
-- Verbose now passes only to the Start-Jojoba scriptblock code. If you want
-  to see verbose output from Jojoba and PoshRSJob use -JojobaVerbose instead.
+- Verbose now passes only to the `Start-Jojoba` scriptblock code. If you want
+  to see verbose output from Jojoba and PoshRSJob use `-JojobaVerbose` instead.
 - Updated very old entries in the CHANGELOG.
 
 ## [4.0.5] - 2018-03-07
 ### Changed
 - Where objects are output into the Data section of a test, they are formatted
-  with Format-List and Out-String. Now Out-String is limited to a width of
+  with `Format-List` and `Out-String`. Now Out-String is limited to a width of
   up to 12 characters less than the terminal width, so when it is displayed
-  on screen inside the test case (which is also formatted with Format-List)
+  on screen inside the test case (which is also formatted with `Format-List`)
   it will wrap correctly. If there's no known terminal width then nothing
-  changes.
+  changes. This won't work for nested tests though.
 
 ## [4.0.4] - 2018-03-06
 ### Fixed
-- Write-JojobaProperty would fail if called twice on the same property.
-- Write-JojobaSkip would skip a test even if it had already failed. Now a Skip
+- `Write-JojobaProperty` would fail if called twice on the same property.
+- `Write-JojobaSkip` would skip a test even if it had already failed. Now a Skip
   will always log its message but will not overwrite a previous Fail result.
 
 ## [4.0.3] - 2018-02-28
@@ -65,9 +65,9 @@ parameter of any name.
 made to occur with `-JojobaPassThru`. Host output can be silenced with
 `-JojobaQuiet`.
 - `Write-JojobaAbort` replaced with `Write-JojobaFail -CriticalFailure`. Also
-these critical failures now return normal test results, with $LASTEXITCODE = 1
-and an extra terminating Write-Error at the end of the pipeline. Previously
-only a Write-Error was returned and no results.
+these critical failures now return normal test results, with `$LASTEXITCODE = 1`
+and an extra terminating `Write-Error` at the end of the pipeline. Previously
+only a `Write-Error` was returned and no results.
 
 ### Fixed
 - Test output now populates as tests complete rather than after all tests have
@@ -75,7 +75,7 @@ completed.
 
 ## [1.4.5] 2018-02-20
 ### Added
-- Underlying RSJobs now have the same name as the $InputObject parameter. This
+- Underlying RSJobs now have the same name as the InputObject parameter. This
   makes it easier if you were to Ctrl-C to cancel a function which uses Jojoba
   and has hung, and then use `Get-RSJob` to see which jobs are stalled, and
   immediately determine what was the input that caused the hang.
@@ -89,7 +89,7 @@ completed.
   and takes a hashtable as input.
 
 ### Changed
-- Errors in $JojobaCallback calls will change a test case result to Fail and
+- Errors in `$JojobaCallback` calls will change a test case result to Fail and
   add messages to the Data section.
 
 ### Removed
@@ -115,8 +115,8 @@ completed.
   variable BUILD_URL. When this is found the Jojoba.xml will be generated.
   The existing switch still exists if you'd like to generate xml outside of
   Jenkins.
-- $JojobaBatch parameters MUST now be defined as:
-    [string] $JojobaBatch = [System.Guid]::NewGuid().ToString()
+- `$JojobaBatch` parameters MUST now be defined as:
+    `[string] $JojobaBatch = [System.Guid]::NewGuid().ToString()`
   This is because there is a delay on ScriptProperty being evaluated when
   it is used as a parameter, and is breaking under high concurrency load.
 
@@ -126,7 +126,7 @@ completed.
 ## [1.0.6] 2017-02-23
 ### Changed
 - Objects which are output as per normal inside your function will now be
-  converted with Select-Object -Property * so that all bits are visible in
+  converted with `Select-Object -Property *` so that all bits are visible in
   the test case.
 
 ### Fixed
@@ -138,20 +138,20 @@ completed.
   onwards, but it probably shouldn't be used.
 
 ### Changed
-- If a Write-JojobaCallback function was defined this would be called with the
+- If a `Write-JojobaCallback` function was defined this would be called with the
   test case after completion so it could be written to disk. Instead the name
   of the function to be called can be specified in a $JojobaCallback parameter
   on the function that uses Start-Jojoba. Whatever name is defined here will
   be called with one test case object at a time.
-- The $JojobaBatch parameter on the caller should be a [string] instead of a
+- The `$JojobaBatch` parameter on the caller should be a [string] instead of a
   [guid].
 
 ### Removed
-- Write-JojobaData has been removed and its usage has been included inline to
-  Start-Jojoba.
+- `Write-JojobaData` has been removed and its usage has been included inline to
+  `Start-Jojoba`.
 
 ### Fixed
-- Write-JojobaXml has better error handling for empty sections.
+- `Write-JojobaXml` has better error handling for empty sections.
 
 ## [1.0.4] - 2017-02-18
 ### Added
@@ -170,8 +170,8 @@ completed.
 ## [1.0.3] - 2017-02-17
 ### Changed
 - Reduced ScriptAnalyzer warnings by removing common abbreviations.
-- Input of -Parallel changed to -JojobaThrottle.
-- Input of -Jenkins changed to -JojobaJenkins.
+- Function parameters of `-Parallel` changed to `-JojobaThrottle`.
+- Function parameters of `-Jenkins` changed to `-JojobaJenkins`.
 
 ### Fixed
 - `Write-JojobaFail` writes the correct error message now.
