@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.6] - 2018-03-11
+### Changed
+- Verbose now passes only to the Start-Jojoba scriptblock code. If you want
+  to see verbose output from Jojoba and PoshRSJob use -JojobaVerbose instead.
+- Updated very old entries in the CHANGELOG.
+
 ## [4.0.5] - 2018-03-07
 ### Changed
 - Where objects are output into the Data section of a test, they are formatted
@@ -42,6 +48,7 @@ storage.
 - Initial Pester tests and AppVeyor integration.
 - Host colouring of tests.
 - Logo.
+- VS Code workspace.
 
 ### Changed
 - Old `$Jojoba` parameters should now be removed from the function header as
@@ -59,3 +66,119 @@ only a Write-Error was returned and no results.
 ### Fixed
 - Test output now populates as tests complete rather than after all tests have
 completed.
+
+## [1.4.5] 2018-02-20
+### Added
+- Underlying RSJobs now have the same name as the $InputObject parameter. This
+  makes it easier if you were to Ctrl-C to cancel a function which uses Jojoba
+  and has hung, and then use `Get-RSJob` to see which jobs are stalled, and
+  immediately determine what was the input that caused the hang.
+
+## [1.4.4] 2017-11-08
+### Added
+- `Write-JojobaAbort` function aborts a test case with a hard exception that is
+  not rolled into a test case, it just exits raw. This is to indicate a serious
+  problem with test processing.
+- `Write-JojobaProperty` function can add custom properties to the test case
+  and takes a hashtable as input.
+
+### Changed
+- Errors in $JojobaCallback calls will change a test case result to Fail and
+  add messages to the Data section.
+
+### Removed
+- Fast load function for the module. It was causing problems with jobs and
+  under high concurrency.
+
+## [1.0.9] 2017-04-27
+### Added
+- `Publish-Jojoba` now uses a progress bar, provided by `Wait-RSJob`.
+- Fast load function for the module.
+
+### Fixed
+- Strings passed to caller functions can now contain ' marks.
+
+## [1.0.8] 2017-03-02
+### Changed
+- Jenkins BUILD_URL detection switched for JENKINS_SERVER_COOKIE as it is
+  more reliable.
+
+## [1.0.7] 2017-02-27
+### Changed
+- Jenkins will now be auto-detected through the existence of the environment
+  variable BUILD_URL. When this is found the Jojoba.xml will be generated.
+  The existing switch still exists if you'd like to generate xml outside of
+  Jenkins.
+- $JojobaBatch parameters MUST now be defined as:
+    [string] $JojobaBatch = [System.Guid]::NewGuid().ToString()
+  This is because there is a delay on ScriptProperty being evaluated when
+  it is used as a parameter, and is breaking under high concurrency load.
+
+### Fixed
+- Test case Message section is now resistant to $null objects in the pipeline.
+
+## [1.0.6] 2017-02-23
+### Changed
+- Objects which are output as per normal inside your function will now be
+  converted with Select-Object -Property * so that all bits are visible in
+  the test case.
+
+### Fixed
+- Added missing dependency for the Disposable module.
+
+## [1.0.5] 2017-02-19
+### Added
+- `Write-JojobaXml` now takes a -PassThru switch to pass the input object
+  onwards, but it probably shouldn't be used.
+
+### Changed
+- If a Write-JojobaCallback function was defined this would be called with the
+  test case after completion so it could be written to disk. Instead the name
+  of the function to be called can be specified in a $JojobaCallback parameter
+  on the function that uses Start-Jojoba. Whatever name is defined here will
+  be called with one test case object at a time.
+- The $JojobaBatch parameter on the caller should be a [string] instead of a
+  [guid].
+
+### Removed
+- Write-JojobaData has been removed and its usage has been included inline to
+  Start-Jojoba.
+
+### Fixed
+- Write-JojobaXml has better error handling for empty sections.
+
+## [1.0.4] - 2017-02-18
+### Added
+- `Out-JojobaSpeech` function.
+- `Start-Jojoba` can be called from a function script as well as a module.
+
+### Changed
+- The Suite of a test class will be the name of a script, if it's called from
+  a script instead of from a module. If no Suite can be determined it will be
+  set to "Jojoba" because the unit test format doesn't allow it to be blank.
+
+### Fixed
+- `Publish-Jojoba` sets $global:LASTEXITCODE instead of $LASTEXITCODE so that
+  results propagate to the caller shell and Jenkins properly.
+
+## [1.0.3] - 2017-02-17
+### Changed
+- Reduced ScriptAnalyzer warnings by removing common abbreviations.
+- Input of -Parallel changed to -JojobaThrottle.
+- Input of -Jenkins changed to -JojobaJenkins.
+
+### Fixed
+- `Write-JojobaFail` writes the correct error message now.
+- `Start-RSJob` now imports the correct -Verbose flag from the caller.
+
+## [1.0.0] - 2017-02-14
+### Added
+- `Start-Jojoba` function is used in the process {} block of a function to
+  execute one job per pipeline input.
+- `Publish-Jojoba` function is used in the end {} block of a function to
+  wait for RSJobs to exit and collate their data.
+- `Write-JojobaData` function to set a test case data section (internally).
+- `Write-JojobaFail` function to set a test case result to Fail.
+- `Write-JojobaSkip` function to set a test case result to Skip.
+- `Write-JojobaXml` function used inside Publish-Jojoba to convert a test case
+  to JUnit format XML for Jenkins.

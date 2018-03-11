@@ -92,12 +92,14 @@ function Get-JojobaConfiguration {
             } else {
                 @{ }
             }
+
             # Automatic populations
             Suite        = $callerModule
             ClassName    = $callerFunction
             Name         = $Caller.GetVariableValue($inputName)
 
             # Manual switches
+            Verbose      = $false
             Quiet        = $false
             PassThru     = $false
             Throttle     = $env:NUMBER_OF_PROCESSORS

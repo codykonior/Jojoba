@@ -163,6 +163,16 @@ Describe "Jojoba" {
             $result = "ABC" | Test-FailSkip -JojobaQuiet -JojobaPassThru
             $result.Result | Should -Be "Fail"
         }
+        It "-Verbose should work on the calling function" {
+            # It should simply add a VERBOSE: Pass ABC to the Data section.
+            $result = "ABC" | Test-Verbose -Verbose -JojobaQuiet -JojobaPassThru
+            $result.Data | Should -Be "VERBOSE: Pass ABC"
+        }
+        It "-Verbose should NOT output PoshRSJob stuff" {
+            $result = "ABC" | Test-Verbose -Verbose -JojobaQuiet -JojobaPassThru *>&1
+            $result.GetType().FullName | Should -Not -Be "Object[]"
+            $result.GetType().Name | Should -Be "PSCustomObject"
+        }
     }
     Context "default and unsafe mode work as predicted" {
         It "default ErrorActionPreference catches errors" {

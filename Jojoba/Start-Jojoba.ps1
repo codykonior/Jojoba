@@ -112,13 +112,13 @@ function Start-Jojoba {
                 } else {
                     $null
                 }
-                Verbose         = $VerbosePreference
+                Verbose         = $configuration.Verbose
             }
-            if ($configuration.Unsafe) {
-                $jobArguments.ScriptBlock = [scriptblock]::Create("`$_ | $($configuration.Function) -JojobaThrottle 0")
-            } else {
-                $jobArguments.ScriptBlock = [scriptblock]::Create("Set-StrictMode -Version Latest; `$ErrorActionPreference = `"Stop`"; `$_ | $($configuration.Function) -JojobaThrottle 0")
+            $jobScriptBlock = "Import-Module Jojoba -Verbose:`$false; `$_ | $($configuration.Function) -JojobaThrottle 0"
+            if (!$configuration.Unsafe) {
+                $jobScriptBlock = "Set-StrictMode -Version Latest; `$ErrorActionPreference = `"Stop`"; $jobScriptBlock"
             }
+            $jobArguments.ScriptBlock = [scriptblock]::Create($jobScriptBlock)
 
             # Add any extra switches and parameters to the scriptblock so they
             # can be passed to the caller. This can't handle complex objects -
@@ -152,6 +152,7 @@ function Start-Jojoba {
             }
 
             Write-Verbose "Scheduling $($jobArguments.Name) batch $($jobArguments.Batch) throttle $($jobArguments.Throttle) modules $($jobArguments.ModulesToImport) functions $($jobArguments.FunctionsToLoad) script $($jobArguments.ScriptBlock)"
+
             # If the function was called with a pipeline (it should have been)
             # then pass that on in the pipeline.
             # Otherwise pass the variable in over the pipeline anyway, as it's
