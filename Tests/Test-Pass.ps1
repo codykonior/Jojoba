@@ -2,7 +2,6 @@ function Test-Pass {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
-        [Alias("InputObject")]
         $SomeParameter,
 
         [Parameter(ValueFromRemainingArguments)]

@@ -35,36 +35,33 @@ function Get-JojobaConfiguration {
         if ($callerFunction) {
             $callerCommand = $Caller.GetVariableValue("MyInvocation").MyCommand
             if (!$callerCommand) {
-                Write-Error "No caller command"
+                Write-Error "Could not find the function which called Jojoba"
             }
 
-            $argumentName = $null
             $inputName = $null
-            foreach ($key in $callerCommand.Parameters.Keys.GetEnumerator()) {
-                if ($callerCommand.Parameters[$key].ParameterSets.ContainsKey($Caller.ParameterSetName) -and
-                    (
-                        $callerCommand.Parameters[$key].ParameterSets[$Caller.ParameterSetName].ValueFromPipeline -or
-                        $callerCommand.Parameters[$key].ParameterSets[$Caller.ParameterSetName].ValueFromPipelineByPropertyName
-                    ) -and
-                    (
-                        $callerCommand.Parameters[$key].Name -eq "InputObject" -or
-                        $callerCommand.Parameters[$key].Aliases -contains "InputObject"
-                    )) {
-                    $inputName = $Key
-                }
+            $argumentName = $null
 
-                if ($callerCommand.Parameters[$key].ParameterSets.ContainsKey($Caller.ParameterSetName) -and
-                    $callerCommand.Parameters[$key].ParameterSets[$Caller.ParameterSetName].ValueFromRemainingArguments) {
-                    $argumentName = $Key
+            foreach ($key in $callerCommand.Parameters.Keys.GetEnumerator()) {
+                if ($callerCommand.Parameters[$key].ParameterSets.ContainsKey($Caller.ParameterSetName)) {
+                    if ($callerCommand.Parameters[$key].ParameterSets[$Caller.ParameterSetName].ValueFromPipeline) {
+                        if (!$inputName -or
+                            $callerCommand.Parameters[$key].Name -eq "InputObject" -or
+                            $callerCommand.Parameters[$key].Aliases -contains "InputObject") {
+                            $inputName = $Key
+                        }
+                    }
+
+                    if ($callerCommand.Parameters[$key].ParameterSets[$Caller.ParameterSetName].ValueFromRemainingArguments) {
+                        $argumentName = $Key
+                    }
                 }
             }
 
-            # Get the ValueFromRemainingArguments
+            if (!$inputName) {
+                Write-Error "Jojoba requires a parameter with ValueFromPipeline"
+            }
             if (!$argumentName) {
                 Write-Error "Jojoba requires a parameter with ValueFromRemainingArguments"
-            }
-            if (!$inputName) {
-                Write-Error "Jojoba requires a parameter variable aliased to InputObject"
             }
 
             # Load the remaining arguments variable contents, it may be an empty
@@ -129,7 +126,7 @@ function Get-JojobaConfiguration {
             }
         }
 
-        # Resolve full path
+        # Resolve full path of any XML file we need to generate for Jenkins
         if ($settings.Jenkins) {
             $settings.Jenkins = Join-Path (Resolve-Path (Split-Path $settings.Jenkins)) (Split-Path $settings.Jenkins -Leaf)
         }

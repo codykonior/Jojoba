@@ -10,8 +10,7 @@ SHORT DESCRIPTION
 
 LONG DESCRIPTION
 	Jojoba can only be used within functions. Those functions need:
-	* A string type pipeline input with a name or alias of InputObject.
-	  Don't use an array.
+	* A string type ValueFromPipeline input. Don't attempt to use an array.
 	* A ValueFromRemainingArguments argument of any name.
 	  Switches intended for Jojoba will use the -Jojoba prefix.
 	* Start-Jojoba {} wrapping all code in the process block.
@@ -28,7 +27,7 @@ EXAMPLE
 		[CmdletBinding()]
 		param (
 			[Parameter(Mandatory, ValueFromPipeline)]
-			[string] $InputObject,
+			$SomeInput,
 
 			[Parameter(ValueFromRemainingArguments)]
 			$Jojoba
@@ -54,7 +53,6 @@ EXAMPLE
 		[CmdletBinding()]
 		param (
 			[Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-			[Alias("InputObject")]
 			[string] $ComputerName,
 
 			[switch] $VirtualMachine,

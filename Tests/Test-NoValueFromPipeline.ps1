@@ -1,17 +1,17 @@
-function Test-Property {
+function Test-NoValueFromPipeline {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, ValueFromPipeline)]
-        $SomeParameter,
+        [Parameter(ValueFromPipelineByPropertyName)]
+        $SomethingOtherThanInputObject,
         [Parameter(ValueFromRemainingArguments)]
-        $SomethingLeftover
+        $Jojoba
     )
 
     begin {
     }
     process {
         Start-Jojoba {
-            Write-JojobaProperty @{ OtherProperty = "Set" }
+            Write-Output "Pass nothing"
         }
     }
     end {

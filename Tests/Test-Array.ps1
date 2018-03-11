@@ -2,7 +2,6 @@ function Test-Array {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
-        [Alias("InputObject")]
         $SomeParameter,
         [Parameter(ValueFromRemainingArguments)]
         $SomethingLeftover,

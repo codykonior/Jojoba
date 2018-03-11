@@ -15,12 +15,17 @@ Describe "Jojoba" {
         }
     }
 
-    Context "should flag an error if no InputObject parameter or alias exists" {
+    Context "should not flag an error if no InputObject parameter or alias exists" {
         It "with manual input" {
-            { Test-NoInputObject "ABC" -JojobaQuiet } | Should -Throw "Jojoba requires"
+            { Test-NoInputObject "ABC" -JojobaQuiet } | Should -Not -Throw "Jojoba requires"
         }
         It "with pipeline input" {
-            { "ABC" | Test-NoInputObject -JojobaQuiet } | Should -Throw "Jojoba requires"
+            { "ABC" | Test-NoInputObject -JojobaQuiet } | Should -Not -Throw "Jojoba requires"
+        }
+    }
+    Context "should flag an error if no ValueFromPipeline parameter exists" {
+        It "with manual input" {
+            { Test-NoValueFromPipeline "ABC" -JojobaQuiet } | Should -Throw "Jojoba requires"
         }
     }
     Context "should flag an error if no ValueFromRemainingArgument parameter exists" {
@@ -242,8 +247,15 @@ Describe "Jojoba" {
         $jojoba = Measure-Command { 1..10 | Test-Slow -JojobaQuiet }
         $normal = Measure-Command { 1..10 | Test-SlowNoJojoba }
 
-        It "slow jobs should be faster ($($jojoba.Seconds)s) than without ($($normal.Seconds)s)" {
+        It "Jojoba should be faster ($($jojoba.Seconds)s) than executing jobs in sequence ($($normal.Seconds)s)" {
             $jojoba.Seconds | Should -BeLessThan $normal.Seconds
+        }
+
+        $jojobaBatch = Measure-Command { 1..10 | Test-Slow -JojobaQuiet -JojobaBatch "ABC" }
+        $jojobaBatchAbnormal = Measure-Command { 1..10 | ForEach-Object { $_ | Test-Slow -JojobaQuiet -JojobaBatch "ABC" } }
+
+        It "Jojoba with a specific batch should be faster ($($jojobaBatch.Seconds)s) than if the batch feature was broken ($($jojobaBatchAbnormal.Seconds)s)" {
+            $jojobaBatch.Seconds | Should -BeLessThan $jojobaBatchAbnormal.Seconds
         }
 
         1..2 | ForEach-Object {

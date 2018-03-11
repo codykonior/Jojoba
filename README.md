@@ -29,7 +29,7 @@ It is written for Windows PowerShell 5.1 and has also been tested on PowerShell 
 #### Example
 
 Any function using Jojoba needs a minimum of:
-* A string type pipeline input with a name or alias of InputObject. _Don't use an array_.
+* A string type pipeline input by value. _Don't try to use an array_.
 * A ValueFromRemainingArguments argument of any name. _Switches intended for Jojoba will use the -Jojoba prefix._
 * `Start-Jojoba {}` wrapping all code in the process block.
 * `Publish-Jojoba` in the end block.
@@ -41,10 +41,10 @@ function Test-ComputerPing {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
-        [Alias("InputObject")]
         [string] $ComputerName,
-        #region Your other arguments
-        #endregion
+
+        # Your other arguments here
+
         [Parameter(ValueFromRemainingArguments)]
         $Jojoba
     )
@@ -183,7 +183,7 @@ Templates have changed from what was demonstrated in that video to now. You
 must use the template format in this [README][6] instead. You can also read the
 [CHANGELOG][5].
 
-* `$InputObject` can now be a parameter alias rather than being forced as the parameter name.
+* `$InputObject` is no longer required. Whatever first parameter name with a ValueFromPipeline is used by default.
 * `$JojobaBatch` and `$JojobaThrottle` should not be hardcoded into your function definition. A ValueFromRemainingArguments parameter is required instead.
 * Jojoba output is done through Write-Host rather than returning objects. If you need the object then you can use `-JojobaPassThru`. If you don't want to see the Write-Host output use `-JojobaQuiet`.
 

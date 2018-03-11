@@ -2,7 +2,6 @@ function Test-String {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
-        [Alias("InputObject")]
         $SomeParameter,
         [Parameter(ValueFromRemainingArguments)]
         $SomethingLeftover,

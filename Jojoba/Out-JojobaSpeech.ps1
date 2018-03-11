@@ -21,7 +21,6 @@ Rate of speech. 2 is a little faster than normal.
 function Test-DatabaseServer {
     param (
         [Parameter(ValueFromPipeline)]
-        [Alias("InputObject")]
         $ServerInstance,
         [Parameter(ValueFromRemainingArguments)]
         $Jojoba

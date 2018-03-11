@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.7] - 2018-03-12
+### Changed
+- If you only have a single ValueFromPipeline parameter per parameter set, this
+  no longer needs a name or alias of InputObject. If you have multiple variables
+  meeting this definition you can use InputObject to decide which one to use.
+
 ## [4.0.6] - 2018-03-11
 ### Changed
 - Verbose now passes only to the Start-Jojoba scriptblock code. If you want
