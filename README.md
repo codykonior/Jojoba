@@ -174,6 +174,10 @@ That's why it's an advanced feature. You may have to try it and work out how to 
 
 * If your functions loads modules that have a TypesToProcess section then PowerShell can throw spurious errors trying to load those modules while under heavy runspace load due to PowerShell engine internal race conditions. The only solution is to remove it from the module definition file and add `Update-TypeData -PrependPath` lines to the RootModule file instead. Common modules susceptible to this include: FailoverClusters, DnsClient, and SqlServer.
 * PowerShell Core 6.0.1 crashes at the end of the AppVeyor tests with a timeout problem so those tests have been temporarily disabled. I am not able to reproduce it locally.
+* If you are using `SupportsShouldProcess` and pass in `-WhatIf` and then use `$PSCmdlet.ShouldProcess()` then
+  normally that would output something to screen like "What if: Performing the operation". This doesn't happen inside a test because that output cannot be caught. You'll need to output something manually if this is what
+  you want.
+* If you use `| Format-Table` in your code for output, add one extra step of `| Out-String`.
 
 #### Need more?
 
