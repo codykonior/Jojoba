@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.8] - 2018-03-19
+### Fixed
+- Module was not loading properly if installed from Install-Module because of
+  a pattern match in the Jojoba.psm1 which was intended to prevent loading of
+  *.Tests.ps1 etc but was being triggered by dots in the version number in the
+  full path.
+
 ## [4.0.7] - 2018-03-12
 ### Changed
 - If you only have a single ValueFromPipeline parameter per parameter set, this

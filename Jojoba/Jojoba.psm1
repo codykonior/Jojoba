@@ -8,7 +8,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Get-ChildItem $PSScriptRoot | Get-ChildItem -Recurse -PipelineVariable file | Where-Object { $file.FullName -match "^[^\.]+-[^\.]+\.ps1$" } | ForEach-Object {
+Get-ChildItem $PSScriptRoot | Get-ChildItem -Recurse -PipelineVariable file | Where-Object { $file.Name -match "^[^\.]+-[^\.]+\.ps1$" } | ForEach-Object {
     try {
         Write-Verbose "Loading function from path '$($file.FullName)'."
         . $file.FullName
