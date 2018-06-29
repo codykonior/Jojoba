@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.9] - 2018-06-30
+### Fixed
+- Jenkin's JUnit parsing in xUnit became more strict which caused all tests to
+  start failing. This moves around the location of some attributes in the XML
+  to meet the standard and get Jenkins going again. I plan to make some more
+  improvements later (adding error blocks for critical failures).
+
 ## [4.0.8] - 2018-03-19
 ### Fixed
 - Module was not loading properly if installed from Install-Module because of

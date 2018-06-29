@@ -47,9 +47,9 @@ function Write-JojobaXml {
         $xmlDocument.LoadXml('<testsuites></testsuites>')
 
         $templateSuite = New-Object System.Xml.XmlDocument
-        $templateSuite.LoadXml('<testsuite name="" tests="0"></testsuite>')
+        $templateSuite.LoadXml('<testsuite name="" tests="0" timestamp="" errors="0" failures="0"></testsuite>')
         $templateCase = New-Object System.Xml.XmlDocument
-        $templateCase.LoadXml('<testcase classname="" name="" timestamp="" time="0"></testcase>')
+        $templateCase.LoadXml('<testcase classname="" name="" time="0"></testcase>')
         $templateFailure = New-Object System.Xml.XmlDocument
         $templateFailure.LoadXml('<failure message=""></failure>')
         $templateSkipped = New-Object System.Xml.XmlDocument
@@ -68,9 +68,15 @@ function Write-JojobaXml {
             $xmlSuite.name = [string] $suiteName
             $xmlSuite.tests = [string] $suite.Group.Count
 
+            $errors = $suite.Group | Where-Object { $_.CriticalFailure -eq $true } | Measure-Object | ForEach-Object Count
+            $failures = $suite.Group | Where-Object { $_.Result -eq "Fail" } | Measure-Object | ForEach-Object Count
+            $timestamp = $suite.Group | Measure-Object -Minimum Timestamp | ForEach-Object Minimum
+            $xmlSuite.timestamp = $timestamp.ToString("o")
+            $xmlSuite.failures = [string] $failures
+            $xmlSuite.errors = [string] $errors
+
             foreach ($case in $suite.Group) {
                 $xmlCase = $xmlDocument.ImportNode($templateCase.testcase, $false)
-                $xmlCase.timestamp = [string] $case.Timestamp
                 $xmlCase.time = [string] $case.Time
 
                 # Some of these ToString's don't seem necessary, but, it seems
