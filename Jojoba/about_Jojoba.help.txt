@@ -2,84 +2,84 @@ TOPIC
     about_Jojoba
 
 SHORT DESCRIPTION
-	Jojoba wraps function internals to run their pipeline inputs in parallel
-	and output in a test format which can be understood by users, other scripts,
-	and PowerShell. It does this by providing a simple template to follow with a
-	few optional keywords. It's useful for fast, simple, and reliable testing
-	and operational validation of large server environments.
+    Jojoba wraps function internals to run their pipeline inputs in parallel
+    and output in a test format which can be understood by users, other scripts,
+    and PowerShell. It does this by providing a simple template to follow with a
+    few optional keywords. It's useful for fast, simple, and reliable testing
+    and operational validation of large server environments.
 
 LONG DESCRIPTION
-	Jojoba can only be used within functions. Those functions need:
-	* A string type ValueFromPipeline input. Don't attempt to use an array.
-	* A ValueFromRemainingArguments argument of any name.
-	  Switches intended for Jojoba will use the -Jojoba prefix.
-	* Start-Jojoba {} wrapping all code in the process block.
-	* Publish-Jojoba in the end block.
+    Jojoba can only be used within functions. Those functions need:
+    * A string type ValueFromPipeline input. Don't attempt to use an array.
+    * A ValueFromRemainingArguments argument of any name.
+      Switches intended for Jojoba will use the -Jojoba prefix.
+    * Start-Jojoba {} wrapping all code in the process block.
+    * Publish-Jojoba in the end block.
 
-	Any additional function parameters not sent through the pipeline will be
-	serialized to strings and so should be limited to simple types: ints,
-	strings, string arrays, bools, and switches.
-
-EXAMPLE
-	This is the smallest acceptable function.
-
-	function Test-Template {
-		[CmdletBinding()]
-		param (
-			[Parameter(Mandatory, ValueFromPipeline)]
-			$SomeInput,
-
-			[Parameter(ValueFromRemainingArguments)]
-			$Jojoba
-		)
-
-		begin {
-		}
-
-		process {
-			Start-Jojoba {
-		   }
-		}
-
-		end {
-			Publish-Jojoba
-		}
-	}
+    Any additional function parameters not sent through the pipeline will be
+    serialized to strings and so should be limited to simple types: ints,
+    strings, string arrays, bools, and switches.
 
 EXAMPLE
-	Here is a more complex function.
+    This is the smallest acceptable function.
 
-	function Test-Computer {
-		[CmdletBinding()]
-		param (
-			[Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-			[string] $ComputerName,
+    function Test-Template {
+        [CmdletBinding()]
+        param (
+            [Parameter(Mandatory, ValueFromPipeline)]
+            $SomeInput,
 
-			[switch] $VirtualMachine,
-			[int] $RetryCount,
+            [Parameter(ValueFromRemainingArguments)]
+            $Jojoba
+        )
 
-			[Parameter(ValueFromRemainingArguments)]
-			$RemainingArguments
-		)
+        begin {
+        }
 
-		begin {
-		}
+        process {
+            Start-Jojoba {
+           }
+        }
 
-		process {
-			Start-Jojoba {
-				# ...
-				if ($VirtualMachine) {
-					Write-JojobaSkip "Test doesn't support virtual machines"
-				}
-		   }
-		}
+        end {
+            Publish-Jojoba
+        }
+    }
 
-		end {
-			Publish-Jojoba
-		}
-	}
+EXAMPLE
+    Here is a more complex function.
+
+    function Test-Computer {
+        [CmdletBinding()]
+        param (
+            [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+            [string] $ComputerName,
+
+            [switch] $VirtualMachine,
+            [int] $RetryCount,
+
+            [Parameter(ValueFromRemainingArguments)]
+            $RemainingArguments
+        )
+
+        begin {
+        }
+
+        process {
+            Start-Jojoba {
+                # ...
+                if ($VirtualMachine) {
+                    Write-JojobaSkip "Test doesn't support virtual machines"
+                }
+           }
+        }
+
+        end {
+            Publish-Jojoba
+        }
+    }
 
 LINKS
-	For complete usage information check the README:
+    For complete usage information check the README:
 
     https://github.com/codykonior/Jojoba/blob/master/README.md

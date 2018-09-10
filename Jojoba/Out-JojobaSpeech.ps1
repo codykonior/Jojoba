@@ -1,4 +1,4 @@
-﻿<#
+<#
 
 .SYNOPSIS
 Speak Jojoba test results to a sound card.

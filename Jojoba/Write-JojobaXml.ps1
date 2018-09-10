@@ -1,4 +1,4 @@
-﻿<#
+<#
 
 .SYNOPSIS
 Converts Jojoba test case objects to a jUnit XML file Jenkins can understand.
