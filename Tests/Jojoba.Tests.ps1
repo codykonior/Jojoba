@@ -1,7 +1,7 @@
 Describe "Jojoba" {
     Import-Module Jojoba -Force
     Import-Module PoshRSJob -Force
-    Get-ChildItem $PSScriptRoot Test-*.ps1 | ForEach-Object {
+    Get-ChildItem .\Tests\TestScripts\Test-*.ps1 | ForEach-Object {
         . $_.FullName
     }
 
