@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param(
+param (
 )
 
 # Because these are set once in a script scope (all code executed in a module is

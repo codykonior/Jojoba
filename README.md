@@ -147,7 +147,7 @@ The callback function should look like below, though the specific function name 
 ``` powershell
 function Write-Callback {
     [CmdletBinding()]
-    param(
+    param (
         [Parameter(ValueFromPipeline)]
         $TestCase
     )
