@@ -17,8 +17,8 @@ to 1 (failure) and a Write-Error is done after all test results are output.
 
 function Publish-Jojoba {
     [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "global:LASTEXITCODE", Justification = "Required for Jenkins")]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "failed", Justification = "Bug in Analyzer")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', 'global:LASTEXITCODE', Justification = 'Required for Jenkins')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'failed', Justification = 'Bug in Analyzer')]
     param (
         [Parameter(ValueFromRemainingArguments)]
         $Jojoba
