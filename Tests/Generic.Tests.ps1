@@ -109,7 +109,7 @@ Describe "Generic" {
         $relativeName = $file.FullName.Replace((Get-Location).Path + "\", "")
 
         It "$relativeName should not contain weird characters" {
-            $file | Test-FileContent | Should -Not -Be $true
+            $file | Test-FileContent -Verbose | Should -Not -Be $true
         }
     }
 
