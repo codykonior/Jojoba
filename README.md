@@ -1,4 +1,6 @@
-# ![Jojoba logo][1]
+# Jojoba PowerShell Module by Cody Konior
+
+![Jojoba logo][1]
 
 [![Build status](https://ci.appveyor.com/api/projects/status/oefdf90a75hqsk69?svg=true)](https://ci.appveyor.com/project/codykonior/jojoba)
 
