@@ -1,27 +1,19 @@
 # Auto detect text files and perform LF normalization
-*       text=auto
+*               text=auto
 
-# Custom for Visual Studio
-*.cs    diff=csharp
+# Project
+LICENSE             diff text eol=crlf
+*.md                diff text eol=crlf
+*.ps1               diff text eol=crlf
+*.psd1              diff text eol=crlf
+*.psm1              diff text eol=crlf
+*.sql               diff text eol=crlf
+*.txt               diff text eol=crlf
+*.svg               diff text eol=lf
 
-# Standard to msysgit
-*.doc   diff=astextplain
-*.DOC   diff=astextplain
-*.docx  diff=astextplain
-*.DOCX  diff=astextplain
-*.dot   diff=astextplain
-*.DOT   diff=astextplain
-*.pdf   diff=astextplain
-*.PDF   diff=astextplain
-*.rtf   diff=astextplain
-*.RTF   diff=astextplain
-
-# PowerShell, some cmdlets generate these in a bad format for GitHub
-*.ps1   diff
-*.psd1  diff
-*.psm1  diff
-
-*.md    text eol=crlf
-*.ps1   text eol=crlf
-*.psd1  text eol=crlf
-*.psm1  text eol=crlf
+# Internal
+.gitattributes      text eol=lf
+.gitignore          text eol=lf
+.gitconfig          text eol=lf
+*.code-workspace    diff text eol=crlf
+*.json              diff text eol=crlf

@@ -21,7 +21,7 @@ Describe "Generic" {
             $rewrite = $false
 
             $file = Get-Item $FullName
-            if ($file -is [System.IO.DirectoryInfo] -or $file.Extension -notin ".ps1", ".psm1", ".psd1", ".md") {
+            if ($file -is [System.IO.DirectoryInfo] -or $file.Extension -notin ".ps1", ".psm1", ".psd1", ".md", ".sql") {
                 Write-Verbose "$FullName skipped"
                 return $false
             }
@@ -109,7 +109,7 @@ Describe "Generic" {
         $relativeName = $file.FullName.Replace((Get-Location).Path + "\", "")
 
         It "$relativeName should not contain weird characters" {
-            $file | Test-FileContent -Verbose | Should -Not -Be $true
+            $file | Test-FileContent | Should -Not -Be $true
         }
     }
 
