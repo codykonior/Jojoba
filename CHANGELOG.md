@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.0.11] - 2018-10-30
+### Changes
+- Updated internal structure and version bump for PowerShell Gallery.
+
+
 ## [4.0.10] - 2018-09-10
 ### Fixed
 - Files converted to BOM-less TAB-less UTF-8.

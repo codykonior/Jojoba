@@ -12,7 +12,7 @@
     RootModule           = 'Jojoba.psm1'
 
     # Version number of this module.
-    ModuleVersion        = '4.0.10'
+    ModuleVersion        = '4.0.11'
 
     # Supported PSEditions
     CompatiblePSEditions = 'Core', 'Desktop'
