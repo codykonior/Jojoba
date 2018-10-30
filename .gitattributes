@@ -5,22 +5,23 @@
 *.cs     diff=csharp
 
 # Standard to msysgit
-*.doc    diff=astextplain
-*.DOC    diff=astextplain
-*.docx diff=astextplain
-*.DOCX diff=astextplain
-*.dot  diff=astextplain
-*.DOT  diff=astextplain
-*.pdf  diff=astextplain
-*.PDF    diff=astextplain
-*.rtf    diff=astextplain
-*.RTF    diff=astextplain
+*.doc   diff=astextplain
+*.DOC   diff=astextplain
+*.docx  diff=astextplain
+*.DOCX  diff=astextplain
+*.dot   diff=astextplain
+*.DOT   diff=astextplain
+*.pdf   diff=astextplain
+*.PDF   diff=astextplain
+*.rtf   diff=astextplain
+*.RTF   diff=astextplain
 
 # PowerShell, some cmdlets generate these in a bad format for GitHub
-*.ps1 diff
-*.psd1 diff
-*.psm1 diff
+*.ps1   diff
+*.psd1  diff
+*.psm1  diff
 
-*.ps1 text eol=crlf
-*.psd1 text eol=crlf
-*.psm1 text eol=crlf
+*.md    text eol=crlf
+*.ps1   text eol=crlf
+*.psd1  text eol=crlf
+*.psm1  text eol=crlf
