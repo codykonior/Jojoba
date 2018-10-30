@@ -14,6 +14,7 @@ test_script:
       Install-Module Error -Force -AllowClobber
       Install-Module Pester -Force -AllowClobber
       Install-Module PoshRSJob -Force -AllowClobber
+      Install-Module PSScriptAnalyzer -Force -AllowClobber
 
       $env:PSModulePath = "$((Get-Item .).FullName)\;$($env:PSModulePath)"
       $res = Invoke-Pester -Path "." -OutputFormat NUnitXml -OutputFile TestsResults.xml -PassThru
