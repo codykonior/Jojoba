@@ -6,10 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.12] - 2019-02-14
+### Changes
+- Default JojobaThrottle maxes out at 8 for servers with more cores. This is
+  because allocating so many threads is more inefficient than limiting them.
+
 ## [4.0.11] - 2018-10-30
 ### Changes
 - Updated internal structure and version bump for PowerShell Gallery.
-
 
 ## [4.0.10] - 2018-09-10
 ### Fixed

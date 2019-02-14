@@ -99,7 +99,7 @@ function Get-JojobaConfiguration {
             Verbose      = $false
             Quiet        = $false
             PassThru     = $false
-            Throttle     = $env:NUMBER_OF_PROCESSORS
+            Throttle     = if ([int] $env:NUMBER_OF_PROCESSORS -ge 8) { 8 } else { [int] $env:NUMBER_OF_PROCESSORS }
             Jenkins      = if ($env:JENKINS_SERVER_COOKIE) {
                 ".\Jojoba.xml"
             } else {
