@@ -71,9 +71,23 @@ function Get-JojobaConfiguration {
             Write-Error "Jojoba can only be used from within functions"
         }
 
-        # If this is the first run, generate and store the batch number
+        # Modules have a batch number stored inside them on each use or reload.
+        # This massive speeds up Jojoba. If there's no module then a new batch
+        # number is used each time (otherwise reusing runspaces wouldn't pick
+        # up any new functions you defined after the first run).
         if ($arguments -notcontains "-JojobaBatch") {
-            $arguments += "-JojobaBatch", [guid]::NewGuid().ToString()
+            if ($callerModule) {
+                $callerModuleScope = Get-Module $callerModule
+                if (& $callerModuleScope { Test-Path "Variable:\jojobaBatch" }) {
+                    $jojobaBatch = & $callerModuleScope { $jojobaBatch }
+                } else {
+                    $jojobaBatch = [guid]::NewGuid().ToString()
+                    & $callerModuleScope { $jojobaBatch = "$jojobaBatch" }
+                }
+            } else {
+                $jojobaBatch = [guid]::NewGuid().ToString()
+            }
+            $arguments += "-JojobaBatch", $jojobaBatch
             $Caller.SessionState.PSVariable.Set($argumentName, $arguments)
         }
 

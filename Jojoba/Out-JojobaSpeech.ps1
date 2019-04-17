@@ -72,6 +72,14 @@ function Out-JojobaSpeech {
     }
 
     process {
+        foreach ($service in (Get-Service AudioEndpointBuilder, audiosrv)) {
+            if ($service.Status -ne "Running") {
+                Write-Warning "$($service.Name) is required for speech but is not Running"
+            }
+
+            return
+        }
+
         New-DisposableObject ($speech = New-Object System.Speech.Synthesis.SpeechSynthesizer) {
             $speech.SelectVoiceByHints($VoiceGender)
             $speech.Rate = $VoiceRate

@@ -1,5 +1,6 @@
 [CmdletBinding()]
 param (
+    [bool] $Debugging
 )
 
 # Because these are set once in a script scope (all code executed in a module is
@@ -8,11 +9,20 @@ param (
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Get-ChildItem $PSScriptRoot | Get-ChildItem -Recurse -PipelineVariable file | Where-Object { $file.Name -match "^[^\.]+-[^\.]+\.ps1$" } | ForEach-Object {
-    try {
-        Write-Verbose "Loading function from path '$($file.FullName)'."
-        . $file.FullName
-    } catch {
-        Write-Error "Failed to load $($file.FullName): $_"
+if ($Debugging) {
+    foreach ($fileName in (Get-ChildItem $PSScriptRoot "*-*.ps1" -Recurse -Exclude "*.Steps.ps1", "*.Tests.ps1", "*.ps1xml")) {
+        try {
+            Write-Verbose "Loading function from path '$fileName'."
+            . $fileName.FullName
+        } catch {
+            Write-Verbose "Loading function from path '$fileName'."
+            Write-Error $_
+        }
     }
+} else {
+    $scriptBlock = Get-ChildItem $PSScriptRoot "*-*.ps1" -Recurse -Exclude "*.Steps.ps1", "*.Tests.ps1", "*.ps1xml" | ForEach-Object {
+        Write-Verbose "Loading function from path '$($_.FullName)'."
+        [System.IO.File]::ReadAllText($_.FullName)
+    }
+    $ExecutionContext.InvokeCommand.InvokeScript($false, [scriptblock]::Create($scriptBlock), $null, $null)
 }

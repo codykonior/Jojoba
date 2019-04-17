@@ -1,7 +1,9 @@
 Describe "Jojoba" {
     Import-Module Jojoba -Force
     Import-Module PoshRSJob -Force
+
     Get-ChildItem .\Tests\TestScripts\Test-*.ps1 | ForEach-Object {
+        Write-Verbose "Loading $($_.FullName)"
         . $_.FullName
     }
 

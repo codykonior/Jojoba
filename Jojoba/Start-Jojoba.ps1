@@ -43,7 +43,7 @@ function Start-Jojoba {
             # Fill out the test case
             $jojobaTestCase = [PSCustomObject] @{
                 UserName        = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-                Timestamp       = Get-Date
+                Timestamp       = (Get-Date).ToUniversalTime()
                 Time            = 0
                 CriticalFailure = $false
                 #
@@ -91,7 +91,7 @@ function Start-Jojoba {
             }
 
             # Calculate other useful information for the test case for use by Jenkins
-            $jojobaTestCase.Time = ((Get-Date) - $jojobaTestCase.Timestamp).TotalSeconds
+            $jojobaTestCase.Time = ((Get-Date).ToUniversalTime() - $jojobaTestCase.Timestamp).TotalSeconds
 
             # Write out the test case after getting rid of {} marks
             $jojobaTestCase.Message = (($jojobaTestCase.Message -join [Environment]::NewLine), $null, 1 -ne "")[0]
