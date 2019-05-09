@@ -79,10 +79,10 @@ function Get-JojobaConfiguration {
             if ($callerModule) {
                 $callerModuleScope = Get-Module $callerModule
                 if (& $callerModuleScope { Test-Path "Variable:\jojobaBatch" }) {
-                    $jojobaBatch = & $callerModuleScope { $jojobaBatch }
+                    $jojobaBatch = & $callerModuleScope { $script:jojobaBatch }
                 } else {
                     $jojobaBatch = [guid]::NewGuid().ToString()
-                    & $callerModuleScope { $jojobaBatch = "$jojobaBatch" }
+                    & $callerModuleScope { param ($ModuleBatch) $script:jojobaBatch = $ModuleBatch } $jojobaBatch
                 }
             } else {
                 $jojobaBatch = [guid]::NewGuid().ToString()

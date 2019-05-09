@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.1] - 2019-05-09
+
+### Fixed
+
+- $jojobaBatch is now stored and retrieved properly within the caller module.
+
 ## [4.1.0] - 2019-04-17
 
 ### Changes
