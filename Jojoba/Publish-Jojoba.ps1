@@ -20,6 +20,8 @@ function Publish-Jojoba {
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidGlobalVars', 'global:LASTEXITCODE', Justification = 'Required for Jenkins')]
     [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'failed', Justification = 'Bug in Analyzer')]
     param (
+        [string[]] $Property = @("UserName", "Suite", "Timestamp", "Time", "ClassName", "Name", "Result", "Message", "Data"),
+
         [Parameter(ValueFromRemainingArguments)]
         $Jojoba
     )
@@ -47,7 +49,8 @@ function Publish-Jojoba {
 
                 # Write out all the good test information
                 if (!$configuration.Quiet) {
-                    $jobResult | Select-Object UserName, Suite, Timestamp, Time, ClassName, Name, Result, Message, Data | Format-List | Out-String | ForEach-Object -PipelineVariable line {
+                    $jobResultProperty = $Property | Where-Object { $_ -in $jobResult.psobject.Properties.Name }
+                    $jobResult | Select-Object $jobResultProperty | Format-List | Out-String | ForEach-Object -PipelineVariable line {
                         $_ -replace "(?m)\A\s+", "" -replace "(?m)^\s(\s+)\Z", "" -split [Environment]::NewLine
                     } | ForEach-Object {
                         if ($line -match "^(Name.*?:)(.*)`$") {
@@ -63,7 +66,7 @@ function Publish-Jojoba {
                             Write-Host $line -ForegroundColor DarkGray
                         }
                     }
-                #>
+                    #>
                 }
 
                 if ($configuration.PassThru) {

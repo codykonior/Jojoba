@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.2] - 2019-05-17
+
+### Added
+
+- Publish-Jojoba can now take a list of properties to output to the display.
+
 ## [4.1.1] - 2019-05-09
 
 ### Fixed
