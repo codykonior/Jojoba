@@ -9,6 +9,15 @@ param (
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+# Constrained endpoint compatibility
+Set-Alias -Name Exit-PSSession -Value Microsoft.PowerShell.Core\Exit-PSSession
+Set-Alias -Name Get-Command -Value Microsoft.PowerShell.Core\Get-Command
+Set-Alias -Name Get-FormatData -Value Microsoft.PowerShell.Utility\Get-FormatData
+Set-Alias -Name Get-Help -Value Microsoft.PowerShell.Core\Get-Help
+Set-Alias -Name Measure-Object -Value Microsoft.PowerShell.Utility\Measure-Object
+Set-Alias -Name Out-Default -Value Microsoft.PowerShell.Core\Out-Default
+Set-Alias -Name Select-Object -Value Microsoft.PowerShell.Utility\Select-Object
+
 if ($Debugging) {
     foreach ($fileName in (Get-ChildItem $PSScriptRoot "*-*.ps1" -Recurse -Exclude "*.Steps.ps1", "*.Tests.ps1", "*.ps1xml")) {
         try {
