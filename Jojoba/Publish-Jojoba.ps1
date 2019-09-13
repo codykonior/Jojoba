@@ -49,7 +49,7 @@ function Publish-Jojoba {
 
                 # Write out all the good test information
                 if (!$configuration.Quiet) {
-                    $jobResultProperty = $Property | Where-Object { $_ -in $jobResult.psobject.Properties.Name }
+                    $jobResultProperty = $Property | Where-Object { $jobResult.psobject.Properties -and $_ -in $jobResult.psobject.Properties.Name }
                     $jobResult | Select-Object $jobResultProperty | Format-List | Out-String | ForEach-Object -PipelineVariable line {
                         $_ -replace "(?m)\A\s+", "" -replace "(?m)^\s(\s+)\Z", "" -split [Environment]::NewLine
                     } | ForEach-Object {
