@@ -66,7 +66,6 @@ function Publish-Jojoba {
                             Write-Host $line -ForegroundColor DarkGray
                         }
                     }
-                    #>
                 }
 
                 if ($configuration.PassThru) {
