@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.6] - 2019-12-17
+
+### Fixed
+
+- Errors output inside jobs would throw unintentional errors during parsing.
+
 ## [4.1.5] - 2019-07-20
 
 ### Fixed

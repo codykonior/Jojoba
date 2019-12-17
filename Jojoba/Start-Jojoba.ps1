@@ -81,7 +81,9 @@ function Start-Jojoba {
                     [void] $jojobaTestCase.Data.Add("WARNING: $jojobaMessage")
                 } elseif ($jojobaMessage -is [System.Management.Automation.ErrorRecord]) {
                     # Exceptions also get wrapped in an ErrorRecord
-                    [void] $jojobaTestCase.Data.Add($jojobaMessage)
+                    $outStringParams = $configuration.OutString
+                    [void] $jojobaTestCase.Data.Add(($jojobaMessage | Format-List | Out-String @outStringParams | ForEach-Object {
+                                $_ -replace "(?m)\A\s+", "" -replace "(?m)^\s(\s+)\Z", "" }))
                 } else {
                     # Expand complex objects
                     $outStringParams = $configuration.OutString
